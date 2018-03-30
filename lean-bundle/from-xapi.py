@@ -3,9 +3,11 @@ import numpy as np
 import sys
 import json
 import time
+from os import path
 from argparse import ArgumentParser
 from utils.json import JSONObject
 from utils.group import LeanGroup
+from utils.error import *
 from xapi import actor, authority, date, lo, interaction
 
 
@@ -35,15 +37,19 @@ def add_statement(bundle, xapi):
     #print("Statement added")
 
 if __name__ == "__main__":
+    print("Converting xAPI from JSON to LeAn Bundle")
     parser = ArgumentParser("LeAn Bundle xAPI Parser")
-    parser.add_argument('--out', required=True)
+    parser.add_argument('--out')
     parser.add_argument('--replace', '-r', help="Replace the file with the new content", action='store_true')
     parser.add_argument('--bench', action='store_true', help="Benchmark the app")
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('file', help="The file to read the xAPI Statements from")
 
     args = parser.parse_args()
-    print("Converting xAPI from JSON to LeAn Bundle")
+    if not args.out:
+        #guess filename
+        base, _ = path.splitext(args.file)
+        args.out = base + '.lean'
     print("Creating file {}".format(args.out))
     if(args.replace):
         print("Replacing content in bundle")
@@ -65,7 +71,7 @@ if __name__ == "__main__":
             if 'statement' in xapi:
                 try:
                     add_statement(f, xapi)
-                except Exception as e:
+                except MissingConverterError as e:
                     import traceback
                     #print empty line to preserve counter
                     print('')

@@ -1,6 +1,8 @@
 import h5py
-import xapi.lo
+from xapi import lo
 from utils.group import LeanDataset, LeanGroup
+from utils.datatypes import REF_DT
+from utils.error import MissingConverterError
 
 class InteractionCreator():
     def __init__(self, bundle, statement):
@@ -14,7 +16,8 @@ class InteractionCreator():
         return '/interaction/{}/{}'.format(self.id[0], self.id[1])
 
     def extract_id(self):
-        if self.verb.id.startswith('http://adlnet.gov/expapi/verbs'):
+        verb = self.statement.verb
+        if verb.id.startswith('http://adlnet.gov/expapi/verbs'):
             auth = "adl"
             id = verb.id[31:]
         else:
@@ -33,7 +36,7 @@ class InteractionCreator():
             self.write_definition(grp)
         return grp
 
-    def write_definiton(self):
+    def write_definition(self, group):
         pass
 
     def check_definition(self, group):
@@ -42,8 +45,6 @@ class InteractionCreator():
 
 
 def create(fibers, bundle, statement):
-    #create an interaction if not present, link to it
-    (auth, id) = _extract_id(statement.verb)
     #print("Interaction is {}/{}".format(auth,id))
     #TODO: Add display/description to interaction
     interaction = InteractionCreator(bundle, statement).create()
@@ -60,7 +61,7 @@ def create(fibers, bundle, statement):
         data.append(learning_object.ref)
         #print("Created activity entry")
     else:
-        raise NotImplementedError(object.objectType, "not implemented yet")
+        raise MissingConverterError(object.objectType, "not implemented yet")
     #store refs in fiber
     dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
     dset[...] = data

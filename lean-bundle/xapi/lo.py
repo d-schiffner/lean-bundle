@@ -1,7 +1,7 @@
 import numpy as np
 from utils.group import LeanDataset, LeanGroup
 from utils.datatypes import INTERACTIVE_LO_DT, INTERACTIVE_LO_TYPE_MAP
-
+from utils.error import MissingConverterError
 
 __URL2LO = {}
 def _create_choice_lo(lo, definition):
@@ -39,7 +39,7 @@ def _create(bundle, statement):
     object = statement.object
     los = bundle.require_group('/lo')
     #find existing ones
-    new_lo = find_matching(los, object)
+    new_lo = _find_matching(los, object)
     if new_lo:
         return new_lo
     nid = len(los.keys())
@@ -54,9 +54,9 @@ def _create(bundle, statement):
         #check for interactionTypes
         if 'interactionType' in definition:
             if definition.interactionType == 'choice':
-                create_choice_lo(new_lo, definition)
+                _create_choice_lo(new_lo, definition)
             else:
-                raise NotImplementedError("Unknown interaction type: {}".format(definition.interactionType))
+                raise MissingConverterError("Unknown interaction type: {}".format(definition.interactionType))
         else:
             LeanGroup(new_lo).from_json(definition)
     return new_lo

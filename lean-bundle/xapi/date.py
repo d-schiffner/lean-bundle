@@ -7,4 +7,4 @@ def timestamp(xapi, key):
     elif key in xapi:
         #stored in $date key here
         return iso8601.parse_date(xapi[key]['$date']).timestamp()
-    raise AttributeError("Key {} not in list of xapi statements".format(key))
+    raise ValueError("Key {} not in list of xapi statements".format(key))
