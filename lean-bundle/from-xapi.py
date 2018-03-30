@@ -5,99 +5,8 @@ import json
 import time
 from argparse import ArgumentParser
 from utils.json import JSONObject
-from utils.group import LeanGroup, LeanDataset
-from utils.datatypes import *
-from xapi import actor, authority, date
-
-
-def create_choice_lo(lo, definition):
-    #create a choice lo structure
-    lo.attrs['type'] = 'choice'
-    choices = lo.create_group('choices')
-    correctResponses = definition.correctResponsesPattern if 'correctResponsesPattern' in definition else []
-    for obj in definition.choices:
-        c = choices.create_group(obj.id)
-        for k,v in obj.items():
-            if k == 'id':
-                continue
-            #create a dataset from json
-            LeanDataset(c, k).from_json(v)
-        c.attrs.create('correct', obj.id in correctResponses)
-    #write out remaining data
-    LeanGroup(lo).from_json(definition, ['choices', 'type', 'correctResponsesPattern'])
-
-url2LO = {}
-def find_matching(los, object):
-    global url2LO
-    #TODO: this needs to be faster!!!
-    if object.id in url2LO:
-        return url2LO[object.id]
-    return None
-
-def create_lo(bundle, statement):
-    global url2LO
-    object = statement.object
-    los = bundle.require_group('/lo')
-    #find existing ones
-    new_lo = find_matching(los, object)
-    if new_lo:
-        return new_lo
-    nid = len(los.keys())
-    #print("Creating a new lo")
-    new_lo = los.create_group(str(nid))
-    new_lo.attrs['url'] = object.id
-    url2LO[object.id] = new_lo
-    #TODO: identify authority of lo?
-    new_lo.attrs['auth'] = 'anon'
-    if 'definition' in object:
-        definition = object.definition
-        #check for interactionTypes
-        if 'interactionType' in definition:
-            if definition.interactionType == 'choice':
-                create_choice_lo(new_lo, definition)
-            else:
-                raise NotImplementedError("Unknown interaction type: {}".format(definition.interactionType))
-        else:
-            LeanGroup(new_lo).from_json(definition)
-    return new_lo
-
-def update_context_of_lo(lo, statement):
-    #check for context
-    if 'context' in statement and statement.context:
-        #TODO: Create context
-        lo.attrs.create('hasContext', True)
-
-def create_interaction(fibers, bundle, statement):
-    #create an interaction if not present, link to it
-    verb = statement.verb
-    if verb.id.startswith('http://adlnet.gov/expapi/verbs'):
-        auth = "adl"
-        id = verb.id[31:]
-    else:
-        auth = verb.id[7:]
-        auth = auth[:auth.find('/')]
-        id = verb.id[verb.id.rfind('/'):]
-    #print("Interaction is {}/{}".format(auth,id))
-    #TODO: Add display/description to interaction
-    interaction = bundle.require_group('/interaction/{}/{}'.format(auth, id))
-    #TODO: Check if we want to automatically add counts for each interaction
-    #create data
-    data = [interaction.ref]
-    #create a learning object based on the object (if it does not refer to a user or another statement)
-    object = statement.object
-    #print("Type: {}".format(object.objectType.lower()))
-    if object.objectType.lower() == 'activity':
-        #object references an lo
-        #create it
-        learning_object = create_lo(bundle, statement)
-        update_context_of_lo(learning_object, statement)
-        data.append(learning_object.ref)
-        #print("Created activity entry")
-    else:
-        raise NotImplementedError(object.objectType, "not implemented yet")
-    #store refs in fiber
-    dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
-    dset[...] = data
+from utils.group import LeanGroup
+from xapi import actor, authority, date, lo, interaction
 
 
 def add_statement(bundle, xapi):
@@ -118,7 +27,7 @@ def add_statement(bundle, xapi):
         return
     fibers = config_grp.create_group(time)
     #create fibers
-    create_interaction(fibers, bundle, statement)
+    interaction.create(fibers, bundle, statement)
     fibers.attrs.create('stored', date.timestamp(xapi,'stored'))
     if 'result' in statement:
         #TODO: Better parsing?

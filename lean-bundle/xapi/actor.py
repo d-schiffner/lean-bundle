@@ -1,5 +1,5 @@
 from utils.json import JSONObject
-from utils.datatypes import USER_TYPE_DT, __ACTOR_TYPE_MAP__
+from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
 
 
 def create_user(authority_grp, xapi):
@@ -12,5 +12,5 @@ def create_user(authority_grp, xapi):
     #doesn't exist -> create
     user_grp = authority_grp.create_group(name)
     #set the group's attributes
-    user_grp.attrs.create('type', __ACTOR_TYPE_MAP__[actor.objectType.lower()], dtype=USER_TYPE_DT)
+    user_grp.attrs.create('type', ACTOR_TYPE_MAP[actor.objectType.lower()], dtype=USER_TYPE_DT)
     return user_grp
