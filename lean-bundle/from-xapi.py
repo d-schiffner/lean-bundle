@@ -15,9 +15,9 @@ def add_statement(bundle, xapi):
     statement = xapi.statement
     #print("Found statement: {} {} {}".format(statement.actor.name, statement.verb.id, statement.object.id))
     #create authority
-    auth_grp = bundle.require_group('/user/{}'.format(authority.get(statement)))
+    auth_grp = authority.get(bundle, statement)
     #create user group if not existing
-    user_grp = actor.create_user(auth_grp, xapi)
+    user_grp = actor.create_user(auth_grp, xapi.statement.actor)
     #TODO: how to identify configuration?
     config_grp = user_grp.require_group('general')
     #create timestamp entry
@@ -41,6 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('--out')
     parser.add_argument('--replace', '-r', help="Replace the file with the new content", action='store_true')
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
+    parser.add_argument('--limit', default=None, help="Limit to x entries", type=int)
     parser.add_argument('file', help="The file to read the xAPI Statements from")
 
     args = parser.parse_args()
@@ -55,19 +56,26 @@ if __name__ == "__main__":
     else:
         print("Appending to existing bundle")
         f = h5py.File(args.out)
-    
+    print("Reading line count in source file", end='\r')
+    num_lines = sum(1 for line in open(args.file))
+    if args.limit:
+        num_lines = min(num_lines, args.limit)
+    #clear the line
+    print('                                 ', end='\r')
     with open(args.file, 'r') as data_file:
         count = 0
         for line in data_file:
             count += 1
             if count < args.skip:
                 continue
-            print("Statement {}".format(count), end="\r")
+            if args.limit and count > args.limit:
+                break
+            print("\x1b[2K\rStatement {} / {}".format(count, num_lines), end="")
             xapi = json.loads(line, object_hook=JSONObject)
             if 'statement' in xapi:
                 try:
                     add_statement(f, xapi)
-                except MissingConverterError as e:
+                except Exception as e:
                     import traceback
                     #print empty line to preserve counter
                     print('')
@@ -75,7 +83,8 @@ if __name__ == "__main__":
                     print(e)
                     traceback.print_exc()
                     print(xapi)
-                    #sys.exit(1)
+                    if not isinstance(e, MissingConverterError):
+                        sys.exit(1)
             else:
                 print("No statement in line {}".format(count))
         print('')

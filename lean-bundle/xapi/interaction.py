@@ -37,10 +37,14 @@ class InteractionCreator():
         return grp
 
     def write_definition(self, group):
-        pass
+        verb = self.statement.verb
+        if 'display' in verb:
+            LeanDataset(group, 'display').from_json(verb.display)
 
     def check_definition(self, group):
-        pass
+        if 'display' in self.statement.verb and not 'display' in group:
+            print("WARN: Definition was missing for {}".format(group.path))
+            self.write_definition(group)
 
 
 

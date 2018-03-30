@@ -1,6 +1,7 @@
 import numpy as np
 from .datatypes import *
 from .json import JSONObject
+from .error import MissingConverterError
 
 
 class LeanDataset(object):
@@ -11,9 +12,14 @@ class LeanDataset(object):
     def from_json(self, json):
         data = []
         for k,v in json.items():
-            data.append((k,v))
-        dset = self.group.create_dataset(self.name, (len(data),), dtype=KEY_VALUE_DT)
-        dset[...] = data
+            data.append((str(k), JSONObject.dumps(v)))
+        if self.name in self.group:
+            dset = self.group[self.name]
+            dset.resize((dset.shape[0] + len(data),))
+            dset[-len(data):] = data
+        else:
+            dset = self.group.create_dataset(self.name, (len(data),), maxshape=(None,), dtype=KEY_VALUE_DT)
+            dset[...] = data
     
     def to_json(self):
         #TODO: read dataset and convert based on key-values to json
@@ -37,7 +43,7 @@ class LeanGroup(object):
                 lgd = LeanDataset(self.group, k)
                 lgd.from_json(v)
             else:
-                raise Exception("Unknown type: {}".format(type(v)))
+                raise MissingConverterError("Unknown type: {}".format(type(v)))
     #HDF5 to json
     def to_json(self, json):
         #read all attrs and datasets and convert them to json

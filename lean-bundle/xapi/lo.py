@@ -1,9 +1,11 @@
 import numpy as np
+from xapi import authority, actor
 from utils.group import LeanDataset, LeanGroup
 from utils.datatypes import INTERACTIVE_LO_DT, INTERACTIVE_LO_TYPE_MAP
 from utils.error import MissingConverterError
-
 __URL2LO = {}
+__CONTEXT = {}
+
 def _create_choice_lo(lo, definition):
     global __CHOICE_TYPE
     #create a choice lo structure
@@ -27,10 +29,23 @@ def _find_matching(los, object):
 
 
 def update_context(lo, statement):
+    global __CONTEXT
     #check for context
-    if 'context' in statement and statement.context and not 'hasContext' in lo.attrs:
-        #TODO: Create context
-        lo.attrs.create('hasContext', True)
+    if 'context' in statement and statement.context:
+        if 'context' in lo:
+            #TODO: update?
+            pass
+        else:
+            ctx_grp = lo.create_group('context')
+            ctx = statement.context
+            if 'instructor' in ctx:
+                auth_grp = authority.get(lo, statement)
+                user_grp = actor.create_user(auth_grp, ctx.instructor)
+                lo.attrs['instructor'] = user_grp.ref
+            if 'statement' in ctx:
+                raise MissingConverterError('StatementRefs not implemented')
+            LeanGroup(ctx_grp).from_json(ctx, ignore=['instructor', 'statement'])
+            lo.attrs['hasContext'] = True
 
 
 def _create(bundle, statement):

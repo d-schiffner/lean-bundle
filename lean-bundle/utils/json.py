@@ -26,4 +26,7 @@ class JSONObject:
     
     def toJSON(self):
         return self.__dict__
-        
+    
+    @staticmethod
+    def dumps(obj):
+        return json.dumps(obj, cls=ComplexEncoder)

@@ -2,9 +2,8 @@ from utils.json import JSONObject
 from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
 
 
-def create_user(authority_grp, xapi):
+def create_user(authority_grp, actor):
     #creates a bundle group
-    actor = xapi.statement.actor
     name = actor.name if actor.name else 'anon'
     #check for group
     if name in authority_grp:
