@@ -1,4 +1,5 @@
 import numpy as np
+import hashlib
 from xapi import authority, actor
 from utils.group import LeanDataset, LeanGroup
 from utils.datatypes import INTERACTIVE_LO_DT, INTERACTIVE_LO_TYPE_MAP
@@ -32,20 +33,23 @@ def update_context(lo, statement):
     global __CONTEXT
     #check for context
     if 'context' in statement and statement.context:
+        #TODO: define good hash
+        sha = hashlib.sha1(str(",".join(sorted([k for k,v in statement.context.items()]))).encode()).hexdigest()
         if 'context' in lo:
-            #TODO: update?
-            pass
+            if lo['context'].attrs['hash'] != sha:
+                #TODO: Define what to do
+                pass
         else:
             ctx_grp = lo.create_group('context')
             ctx = statement.context
             if 'instructor' in ctx:
                 auth_grp = authority.get(lo, statement)
                 user_grp = actor.create_user(auth_grp, ctx.instructor)
-                lo.attrs['instructor'] = user_grp.ref
+                ctx_grp.attrs['instructor'] = user_grp.ref
             if 'statement' in ctx:
                 raise MissingConverterError('StatementRefs not implemented')
             LeanGroup(ctx_grp).from_json(ctx, ignore=['instructor', 'statement'])
-            lo.attrs['hasContext'] = True
+            ctx_grp.attrs['hash'] = sha
 
 
 def _create(bundle, statement):

@@ -22,6 +22,9 @@ class InteractionCreator():
             id = verb.id[31:]
         else:
             auth = verb.id[7:]
+            #fallback, if https is used
+            if auth[0] == '/':
+                auth = auth[1:]
             auth = auth[:auth.find('/')]
             id = verb.id[verb.id.rfind('/'):]
         self.id = (auth, id)
