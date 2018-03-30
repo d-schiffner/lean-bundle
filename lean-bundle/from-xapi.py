@@ -2,7 +2,6 @@ import h5py
 import numpy as np
 import sys
 import json
-import time
 from os import path
 from argparse import ArgumentParser
 from utils.json import JSONObject
@@ -41,7 +40,6 @@ if __name__ == "__main__":
     parser = ArgumentParser("LeAn Bundle xAPI Parser")
     parser.add_argument('--out')
     parser.add_argument('--replace', '-r', help="Replace the file with the new content", action='store_true')
-    parser.add_argument('--bench', action='store_true', help="Benchmark the app")
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('file', help="The file to read the xAPI Statements from")
 
@@ -58,8 +56,6 @@ if __name__ == "__main__":
         print("Appending to existing bundle")
         f = h5py.File(args.out)
     
-    if(args.bench):
-        start = time.perf_counter()
     with open(args.file, 'r') as data_file:
         count = 0
         for line in data_file:
@@ -84,7 +80,4 @@ if __name__ == "__main__":
                 print("No statement in line {}".format(count))
         print('')
     f.close()
-    if(args.bench):
-        end = time.perf_counter()
-        print("Needed {} ms".format((end-start)*1000))
     print("Program finished")
