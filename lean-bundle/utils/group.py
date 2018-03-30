@@ -14,10 +14,12 @@ class LeanDataset(object):
         for k,v in json.items():
             data.append((str(k), JSONObject.dumps(v)))
         if self.name in self.group:
+            #extending data (should almost not happen, rarely?)
             dset = self.group[self.name]
             dset.resize((dset.shape[0] + len(data),))
             dset[-len(data):] = data
         else:
+            #creating new dataset (default case)
             dset = self.group.create_dataset(self.name, (len(data),), maxshape=(None,), dtype=KEY_VALUE_DT)
             dset[...] = data
     

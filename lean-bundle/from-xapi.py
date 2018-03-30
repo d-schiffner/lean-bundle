@@ -35,6 +35,17 @@ def add_statement(bundle, xapi):
         LeanGroup(fibers).from_json(statement.result)
     #print("Statement added")
 
+def linecount(file):
+    count = 0
+    thefile = open(file, 'rb', buffering=0)
+    while True:
+        #read 1mb chunks
+        buffer = thefile.read(1048576)
+        if not buffer:
+            break
+        count += buffer.count(b'\n')
+    return count
+
 if __name__ == "__main__":
     print("Converting xAPI from JSON to LeAn Bundle")
     parser = ArgumentParser("LeAn Bundle xAPI Parser")
@@ -57,7 +68,7 @@ if __name__ == "__main__":
         print("Appending to existing bundle")
         f = h5py.File(args.out)
     print("Reading line count in source file", end='\r')
-    num_lines = sum(1 for line in open(args.file))
+    num_lines = linecount(args.file)
     if args.limit:
         num_lines = min(num_lines, args.limit)
     #clear the line
