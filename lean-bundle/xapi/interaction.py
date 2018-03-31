@@ -13,51 +13,48 @@ class InteractionCreator():
 
     @property
     def path(self):
-        return '/interaction/{}/{}'.format(self.id[0], self.id[1])
+        return '/interaction/{}'.format(self.id)
 
     def extract_id(self):
         verb = self.statement.verb
-        if verb.id.startswith('http://adlnet.gov/expapi/verbs'):
-            auth = "adl"
-            id = verb.id[31:]
-        else:
-            auth = verb.id[7:]
-            #fallback, if https is used
-            if auth[0] == '/':
-                auth = auth[1:]
-            auth = auth[:auth.find('/')]
-            id = verb.id[verb.id.rfind('/'):]
-        self.id = (auth, id)
+        #interpret uri as path in interaction
+        self.id = verb.id[7:]
+        #fallback, if https is used
+        if self.id[0] == '/':
+            self.id = self.id[1:]
 
     def create(self):
         path = self.path
         if path in self.bundle:
-            grp = self.bundle[path]
-            self.check_definition(grp)
+            self.group = self.bundle[path]
+            self.check_definition()
         else:
-            grp = self.bundle.create_group(path)
-            self.write_definition(grp)
-        return grp
+            self.group = self.bundle.create_group(path)
+            self.write_definition()
+        self.write_context()
 
-    def write_definition(self, group):
+    def write_definition(self):
         verb = self.statement.verb
         if 'display' in verb:
-            LeanDataset(group, 'display').from_json(verb.display)
+            LeanDataset(self.group, 'display').from_json(verb.display)
 
-    def check_definition(self, group):
-        if 'display' in self.statement.verb and not 'display' in group:
-            print("WARN: Definition was missing for {}".format(group.path))
-            self.write_definition(group)
-
+    def check_definition(self):
+        if 'display' in self.statement.verb and not 'display' in self.group:
+            print("WARN: Definition was missing for {}".format(self.group.path))
+            self.write_definition()
+    
+    def write_context(self):
+        #TODO: Specify and extract user behavior specific context data
+        pass
 
 
 def create(fibers, bundle, statement):
     #print("Interaction is {}/{}".format(auth,id))
-    #TODO: Add display/description to interaction
-    interaction = InteractionCreator(bundle, statement).create()
+    inter = InteractionCreator(bundle, statement)
+    inter.create()
     #TODO: Check if we want to automatically trace uses!?
     #create data for fiber
-    data = [interaction.ref]
+    data = [inter.group.ref]
     #create a learning object based on the object (if it does not refer to a user or another statement)
     object = statement.object
     #print("Type: {}".format(object.objectType.lower()))

@@ -12,6 +12,7 @@ class LeanDataset(object):
     def from_json(self, json):
         data = []
         for k,v in json.items():
+            #TODO: Compare behavior if subgroups are generated instead
             data.append((str(k), JSONObject.dumps(v)))
         if self.name in self.group:
             #extending data (should almost not happen, rarely?)
