@@ -33,6 +33,9 @@ def add_statement(bundle, xapi):
     if 'result' in statement:
         #TODO: Better parsing?
         LeanGroup(fibers).from_json(statement.result)
+    if 'context' in statement:
+        #TODO: Write context information here
+        pass
     #print("Statement added")
 
 def linecount(file):
