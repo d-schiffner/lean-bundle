@@ -1,4 +1,5 @@
 import numpy as np
+import h5py
 from .datatypes import *
 from .json import JSONObject
 from .error import MissingConverterError
