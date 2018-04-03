@@ -14,6 +14,12 @@ def create_user(authority_grp, actor):
     user_grp = authority_grp.create_group(name)
     #set the group's attributes
     user_grp.attrs.create('type', ACTOR_TYPE_MAP[actor.objectType.lower()], dtype=USER_TYPE_DT)
-    __log.info(actor)
+    if 'account' in actor:
+        if 'mbox' in actor.account:
+            user_grp.attrs['mbox'] = actor.account.mbox
+        if 'homePage' in actor.account:
+            user_grp.attrs['homepage'] = actor.account.homePage
+    else:
+        __log.warn("Unknown params %s", actor)
     #TODO: set other keys
     return user_grp

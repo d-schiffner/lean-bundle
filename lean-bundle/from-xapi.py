@@ -9,7 +9,11 @@ from utils.json import JSONObject
 from utils.group import LeanGroup
 from utils.error import *
 from utils.files import linecount
+from utils.console import update_line
 from xapi import actor, authority, date, lo, interaction
+#multithreading
+from queue import Queue
+from threading import Thread
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,6 +30,8 @@ def process_statement(bundle, xapi):
     config_grp = user_grp.require_group('general')
     #create timestamp entry
     time = str(date.timestamp(xapi, 'timestamp'))
+    #replace timestamp
+    statement.timestamp = time
     if time in config_grp:
         #this timestamp is already in here!
         log.debug("Timestamp already exists")
@@ -33,15 +39,43 @@ def process_statement(bundle, xapi):
         return
     fibers = config_grp.create_group(time)
     #create fibers
+    #copy id
+    fibers['id'] = statement.id
     interaction.create(fibers, bundle, statement)
-    fibers.attrs.create('stored', date.timestamp(xapi,'stored'))
+    stored = date.timestamp(xapi,'stored')
+    fibers.attrs.create('stored', stored)
+    #replace stored
+    statement.stored = stored
     if 'result' in statement:
         #TODO: Better parsing?
         LeanGroup(fibers).from_json(statement.result)
     if 'context' in statement:
         #TODO: Write context information here
-        pass
-    log.debug("Statement added")
+        context = statement.context
+        new_context = {}
+        if 'instructor' in context:
+            instructor = actor.create_user(auth_grp, context.instructor)
+            instructor.attrs.modify('isInstructor', True)
+            fibers['instructor'] = instructor.ref
+            new_context['instructor'] = context.instructor
+        statement.context = new_context
+    return statement
+
+def store_converted(xapidump, conv):
+    JSONObject.dump(conv, xapidump, separators=(',',':'))
+    xapidump.write('\n')
+
+STATEMENT_QUEUE = Queue()
+def writer_worker(dumpfile):
+    i = 0
+    with open(dumpfile, 'w') as xapidump:
+        while True:
+            entry = STATEMENT_QUEUE.get()
+            if entry is None:
+                break
+            store_converted(xapidump, entry)
+            STATEMENT_QUEUE.task_done()
+    STATEMENT_QUEUE.task_done()
 
 if __name__ == "__main__":
     log = logging.getLogger()
@@ -51,6 +85,7 @@ if __name__ == "__main__":
     parser.add_argument('--replace', '-r', help="Replace the file with the new content", action='store_true')
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('--limit', default=None, help="Limit to x entries", type=int)
+    parser.add_argument('--no-line-count', default=False, help="Skip counting lines", action="store_true")
     parser.add_argument('file', help="The file to read the xAPI Statements from")
     parser.add_argument('-v', '--verbose', help="Verbose logging", action='store_true')
     args = parser.parse_args()
@@ -62,6 +97,10 @@ if __name__ == "__main__":
         #guess filename
         base, _ = path.splitext(args.file)
         args.out = base + '.lean'
+        args.dump = base + "_dump.json"
+        if path.exists(args.dump):
+            import os
+            os.remove(args.dump)
     print("Creating file", args.out)
     if(args.replace):
         print("Replacing content in bundle")
@@ -69,10 +108,19 @@ if __name__ == "__main__":
     else:
         print("Appending to existing bundle")
         f = h5py.File(args.out)
-    num_lines = linecount(args.file)
+    num_lines = linecount(args.file) if not args.no_line_count else 0
     if args.limit:
         num_lines = min(num_lines, args.limit)
+    #create default groups
+    f.create_group('user')
+    f.create_group('lo')
+    f.create_group('interaction')
+
+    #read statements
     with open(args.file, 'r') as data_file:
+        writer_thread = Thread(target=writer_worker, args=(args.dump,))
+        writer_thread.setDaemon(True)
+        writer_thread.start()
         count = 0
         for line in data_file:
             count += 1
@@ -81,11 +129,12 @@ if __name__ == "__main__":
             if args.limit and count > args.limit:
                 break
             if not args.verbose:
-                print("\x1b[2K\rStatement {} / {}".format(count, num_lines), end="")
+                update_line("Statement", count, '/', num_lines)
             xapi = json.loads(line, object_hook=JSONObject)
             if 'statement' in xapi:
                 try:
-                    process_statement(f, xapi)
+                    conv = process_statement(f, xapi)
+                    STATEMENT_QUEUE.put(conv)
                 except Exception as e:
                     import traceback
                     #print empty line to preserve counter
@@ -99,5 +148,11 @@ if __name__ == "__main__":
             else:
                 print("No statement in line", count)
         print('')
+        #end writer thread
+        print("Ending json writer thread")
+        STATEMENT_QUEUE.put(None)
+        STATEMENT_QUEUE.join()
+        print("Json Writer joined")
+        #close handles
     f.close()
     print("Program finished")

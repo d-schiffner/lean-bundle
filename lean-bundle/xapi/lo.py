@@ -82,5 +82,5 @@ def _create(bundle, statement):
 
 def create(bundle, statement):
     lo = _create(bundle, statement)
-    update_context(lo, statement)
+    #update_context(lo, statement)
     return lo
