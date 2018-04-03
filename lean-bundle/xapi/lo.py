@@ -8,7 +8,6 @@ __URL2LO = {}
 __CONTEXT = {}
 
 def _create_choice_lo(lo, definition):
-    global __CHOICE_TYPE
     #create a choice lo structure
     lo.attrs.create('type', INTERACTIVE_LO_TYPE_MAP['choice'], dtype=INTERACTIVE_LO_DT)
     choices = lo.create_group('choices')
@@ -56,7 +55,8 @@ def _create(bundle, statement):
     #Default creation method
     global __URL2LO
     object = statement.object
-    los = bundle.require_group('/lo')
+    #/lo is assured to exist
+    los = bundle['/lo']
     #find existing ones
     new_lo = _find_matching(los, object)
     if new_lo:
@@ -64,10 +64,10 @@ def _create(bundle, statement):
     nid = len(los.keys())
     #print("Creating a new lo")
     new_lo = los.create_group(str(nid))
-    new_lo.attrs['url'] = np.string_(object.id)
+    #new_lo.attrs['url'] = np.string_(object.id)
     __URL2LO[object.id] = new_lo
     #TODO: identify authority of lo?
-    new_lo.attrs['auth'] = 'anon'
+    #new_lo.attrs['auth'] = 'anon'
     if 'definition' in object:
         definition = object.definition
         #check for interactionTypes

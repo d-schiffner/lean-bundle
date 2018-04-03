@@ -1,5 +1,8 @@
 from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
 
+def name(statement):
+    return  statement.authority.name if not 'authority' in statement or not 'name' in statement.authority else 'anon'
+    
 def get(bundle, statement):
     if not 'authority' in statement or not 'name' in statement.authority:
         return bundle.require_group('/user/anon')

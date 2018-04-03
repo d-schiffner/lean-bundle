@@ -11,7 +11,7 @@ from utils.group import LeanGroup
 from utils.error import *
 from utils.files import linecount
 from utils.console import update_line
-from xapi import actor, authority, date, lo, interaction
+from xapi import actor, authority, date, lo, interaction, result, context
 #multithreading
 from queue import Queue
 from threading import Thread
@@ -46,27 +46,15 @@ def process_statement(bundle, xapi):
     fibers = config_grp.create_group(time)
     #create fibers
     #copy id
-    fibers.attrs['id'] = statement.id
+    fibers.attrs['id'] = np.string_(statement.id)
     interaction.create(fibers, bundle, statement)
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
     #replace stored
     #NOTE: this is made to allow import from _dump.json files
     statement.stored = statement.stored if 'stored' in statement else xapi.stored
-    if 'result' in statement:
-        #TODO: Better parsing?
-        LeanGroup(fibers).from_json(statement.result)
-        pass
-    if 'context' in statement:
-        #TODO: Write context information here
-        context = statement.context
-        new_context = {}
-        if 'instructor' in context:
-            instructor = actor.create_user(auth_grp, context.instructor)
-            instructor.attrs.modify('isInstructor', True)
-            fibers.attrs['instructor'] = instructor.ref
-            new_context['instructor'] = context.instructor
-        statement.context = new_context
+    result.parse(fibers, statement)
+    context.parse(auth_grp, fibers, statement)
     return statement
 
 STATEMENT_QUEUE = Queue()
@@ -134,7 +122,7 @@ if __name__ == "__main__":
             count += 1
             if count < args.skip:
                 continue
-            if args.limit and count > args.limit:
+            if args.limit and count >= args.limit:
                 break
             cur = time.monotonic()
             if not args.verbose and (cur - last) > .15:
