@@ -1,6 +1,8 @@
+import logging
 from utils.json import JSONObject
 from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
 
+__log = logging.getLogger()
 
 def create_user(authority_grp, actor):
     #creates a bundle group
@@ -12,4 +14,6 @@ def create_user(authority_grp, actor):
     user_grp = authority_grp.create_group(name)
     #set the group's attributes
     user_grp.attrs.create('type', ACTOR_TYPE_MAP[actor.objectType.lower()], dtype=USER_TYPE_DT)
+    __log.info(actor)
+    #TODO: set other keys
     return user_grp
