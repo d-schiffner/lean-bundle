@@ -69,11 +69,11 @@ def create(fibers, bundle, statement):
         raise MissingConverterError(object.objectType, "not implemented yet")
     #store refs in fiber
     #NOTE: Direct creation of dataset
-    fibers.create_dataset('interaction', data=data, dtype=REF_DT)
+    #fibers.create_dataset('interaction', data=data, dtype=REF_DT)
     #NOTE: Indirect creation of dataset -> equivalent in size to direct creation
     #dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
     #dset[...] = data
-    #NOTE: Empty dataset
+    #NOTE: Empty dataset -> slightly better than dataset
     #dset = fibers.create_dataset("interaction", dtype="f")
     #dset.attrs['type'] = data[0]
     #dset.attrs['target'] = data[1]
@@ -81,10 +81,10 @@ def create(fibers, bundle, statement):
     #actions = fibers.create_group('interaction')
     #actions.attrs['type'] = data[0]
     #actions.attrs['target'] = data[1]
-    #NOTE: storage as direct attributes
-    #fibers.attrs['interaction_type'] = data[0]
-    #fibers.attrs['interaction_target'] = data[1]
-    #NOTE: compact dataspace dataset
+    #NOTE: storage as direct attributes -> best
+    fibers.attrs['interaction_type'] = data[0]
+    fibers.attrs['interaction_target'] = data[1]
+    #NOTE: compact dataspace dataset -> worse than default dset
     #space_id = h5py.h5s.create_simple((2,))
     #dcpl = h5py.h5p.create(h5py.h5p.DATASET_CREATE)
     #dcpl.set_layout(h5py.h5d.COMPACT)
