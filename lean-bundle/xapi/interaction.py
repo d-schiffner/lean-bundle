@@ -67,8 +67,15 @@ def create(fibers, bundle, statement):
     else:
         raise MissingConverterError(object.objectType, "not implemented yet")
     #store refs in fiber
-    dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
-    dset[...] = data
+    #NOTE: Indirect creation of dataset
+    #dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
+    #dset[...] = data
+    #NOTE: Direct creation of dataset
+    fibers.create_dataset('interaction', data=data, dtype=REF_DT)
+    #NOTE: storage as group of attributes
     #actions = fibers.create_group('interaction')
     #actions.attrs['type'] = data[0]
     #actions.attrs['target'] = data[1]
+    #NOTE: storage as direct attributes
+    #fibers.attrs['interaction_type'] = data[0]
+    #fibers.attrs['interaction_target'] = data[1]

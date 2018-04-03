@@ -64,7 +64,7 @@ def _create(bundle, statement):
     nid = len(los.keys())
     #print("Creating a new lo")
     new_lo = los.create_group(str(nid))
-    new_lo.attrs['url'] = object.id
+    new_lo.attrs['url'] = np.string_(object.id)
     __URL2LO[object.id] = new_lo
     #TODO: identify authority of lo?
     new_lo.attrs['auth'] = 'anon'

@@ -34,6 +34,7 @@ def process_statement(bundle, xapi):
     #create timestamp entry
     time = str(date.timestamp(xapi, 'timestamp'))
     #replace timestamp
+    #NOTE: this is made to allow import from _dump.json files
     statement.timestamp = statement.timestamp if 'timestamp' in statement else xapi.timestamp
     if time in config_grp:
         #this timestamp is already in here!
@@ -50,10 +51,12 @@ def process_statement(bundle, xapi):
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
     #replace stored
+    #NOTE: this is made to allow import from _dump.json files
     statement.stored = statement.stored if 'stored' in statement else xapi.stored
     if 'result' in statement:
         #TODO: Better parsing?
         LeanGroup(fibers).from_json(statement.result)
+        pass
     if 'context' in statement:
         #TODO: Write context information here
         context = statement.context
@@ -152,6 +155,8 @@ if __name__ == "__main__":
                 print(xapi)
                 if not isinstance(e, MissingConverterError):
                     sys.exit(1)
+        #complete line
+        update_line("Statement", count, '/', num_lines)
         print('')
         #end writer thread
         if not args.no_dump:

@@ -13,7 +13,7 @@ class LeanDataset(object):
     def _as_attrs(self, json):
         json_attr = self.group.create_group(self.name)
         for k,v in json.items():
-            json_attr.attrs['k'] = JSONObject.dumps(v)
+            json_attr.attrs[k] = JSONObject.dumps(v)
     
     def _as_dataset(self, json):
         data = []
