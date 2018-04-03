@@ -36,11 +36,13 @@ def process_statement(bundle, xapi):
         #this timestamp is already in here!
         log.debug("Timestamp already exists")
         #TODO: Sanity check!
-        return
+        if 'context' in statement and 'instructor' in statement.context:
+            statement.context = {'instructor': statement.context.instructor}
+        return statement
     fibers = config_grp.create_group(time)
     #create fibers
     #copy id
-    fibers['id'] = statement.id
+    fibers.attrs['id'] = statement.id
     interaction.create(fibers, bundle, statement)
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
@@ -75,6 +77,7 @@ def writer_worker(dumpfile):
                 break
             store_converted(xapidump, entry)
             STATEMENT_QUEUE.task_done()
+    print("Writer finished")
     STATEMENT_QUEUE.task_done()
 
 if __name__ == "__main__":
@@ -152,7 +155,6 @@ if __name__ == "__main__":
         print("Ending json writer thread")
         STATEMENT_QUEUE.put(None)
         STATEMENT_QUEUE.join()
-        print("Json Writer joined")
         #close handles
     f.close()
     print("Program finished")
