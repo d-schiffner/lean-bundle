@@ -69,3 +69,6 @@ def create(fibers, bundle, statement):
     #store refs in fiber
     dset = fibers.create_dataset('interaction', (len(data),), dtype=REF_DT)
     dset[...] = data
+    #actions = fibers.create_group('interaction')
+    #actions.attrs['type'] = data[0]
+    #actions.attrs['target'] = data[1]

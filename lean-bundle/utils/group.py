@@ -10,11 +10,16 @@ class LeanDataset(object):
         self.group = group
         self.name = name
 
-    def from_json(self, json):
+    def _as_attrs(self, json):
+        json_attr = self.group.create_group(self.name)
+        for k,v in json.items():
+            json_attr.attrs['k'] = JSONObject.dumps(v)
+    
+    def _as_dataset(self, json):
         data = []
         for k,v in json.items():
-            #TODO: Compare behavior if subgroups are generated instead
             data.append((str(k), JSONObject.dumps(v)))
+        
         if self.name in self.group:
             #extending data (should almost not happen, rarely?)
             dset = self.group[self.name]
@@ -24,6 +29,9 @@ class LeanDataset(object):
             #creating new dataset (default case)
             dset = self.group.create_dataset(self.name, (len(data),), maxshape=(None,), dtype=KEY_VALUE_DT)
             dset[...] = data
+
+    def from_json(self, json):
+        return self._as_attrs(json)
     
     def to_json(self):
         #TODO: read dataset and convert based on key-values to json

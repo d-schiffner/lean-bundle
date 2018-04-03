@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import json
 import logging
+import time
 from os import path
 from argparse import ArgumentParser
 from utils.json import JSONObject
@@ -19,19 +20,21 @@ logging.basicConfig(level=logging.INFO)
 
 def process_statement(bundle, xapi):
     log = logging.getLogger()
+    if not 'statement' in xapi:
+        xapi = JSONObject({'statement': xapi})
     #read user
     statement = xapi.statement
     log.debug("Found statement: {} {} {}".format(statement.actor.name, statement.verb.id, statement.object.id))
     #create authority
     auth_grp = authority.get(bundle, statement)
     #create user group if not existing
-    user_grp = actor.create_user(auth_grp, xapi.statement.actor)
+    user_grp = actor.create_user(auth_grp, statement.actor)
     #TODO: how to identify configuration?
     config_grp = user_grp.require_group('general')
     #create timestamp entry
     time = str(date.timestamp(xapi, 'timestamp'))
     #replace timestamp
-    statement.timestamp = time
+    statement.timestamp = statement.timestamp if 'timestamp' in statement else xapi.timestamp
     if time in config_grp:
         #this timestamp is already in here!
         log.debug("Timestamp already exists")
@@ -47,7 +50,7 @@ def process_statement(bundle, xapi):
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
     #replace stored
-    statement.stored = stored
+    statement.stored = statement.stored if 'stored' in statement else xapi.stored
     if 'result' in statement:
         #TODO: Better parsing?
         LeanGroup(fibers).from_json(statement.result)
@@ -58,14 +61,10 @@ def process_statement(bundle, xapi):
         if 'instructor' in context:
             instructor = actor.create_user(auth_grp, context.instructor)
             instructor.attrs.modify('isInstructor', True)
-            fibers['instructor'] = instructor.ref
+            fibers.attrs['instructor'] = instructor.ref
             new_context['instructor'] = context.instructor
         statement.context = new_context
     return statement
-
-def store_converted(xapidump, conv):
-    JSONObject.dump(conv, xapidump, separators=(',',':'))
-    xapidump.write('\n')
 
 STATEMENT_QUEUE = Queue()
 def writer_worker(dumpfile):
@@ -75,7 +74,8 @@ def writer_worker(dumpfile):
             entry = STATEMENT_QUEUE.get()
             if entry is None:
                 break
-            store_converted(xapidump, entry)
+            JSONObject.dump(entry, xapidump, separators=(',',':'))
+            xapidump.write('\n')
             STATEMENT_QUEUE.task_done()
     print("Writer finished")
     STATEMENT_QUEUE.task_done()
@@ -89,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('--limit', default=None, help="Limit to x entries", type=int)
     parser.add_argument('--no-line-count', default=False, help="Skip counting lines", action="store_true")
+    parser.add_argument('--no-dump', default=False, help="Prevent dump converted parts of the statements", action="store_true")
     parser.add_argument('file', help="The file to read the xAPI Statements from")
     parser.add_argument('-v', '--verbose', help="Verbose logging", action='store_true')
     args = parser.parse_args()
@@ -101,7 +102,7 @@ if __name__ == "__main__":
         base, _ = path.splitext(args.file)
         args.out = base + '.lean'
         args.dump = base + "_dump.json"
-        if path.exists(args.dump):
+        if not args.no_dump and path.exists(args.dump):
             import os
             os.remove(args.dump)
     print("Creating file", args.out)
@@ -118,12 +119,13 @@ if __name__ == "__main__":
     f.create_group('user')
     f.create_group('lo')
     f.create_group('interaction')
-
+    last = time.monotonic()
     #read statements
     with open(args.file, 'r') as data_file:
-        writer_thread = Thread(target=writer_worker, args=(args.dump,))
-        writer_thread.setDaemon(True)
-        writer_thread.start()
+        if not args.no_dump:
+            writer_thread = Thread(target=writer_worker, args=(args.dump,))
+            writer_thread.setDaemon(True)
+            writer_thread.start()
         count = 0
         for line in data_file:
             count += 1
@@ -131,30 +133,31 @@ if __name__ == "__main__":
                 continue
             if args.limit and count > args.limit:
                 break
-            if not args.verbose:
+            cur = time.monotonic()
+            if not args.verbose and (cur - last) > .15:
                 update_line("Statement", count, '/', num_lines)
+                last = cur
             xapi = json.loads(line, object_hook=JSONObject)
-            if 'statement' in xapi:
-                try:
-                    conv = process_statement(f, xapi)
+            try:
+                conv = process_statement(f, xapi)
+                if not args.no_dump:
                     STATEMENT_QUEUE.put(conv)
-                except Exception as e:
-                    import traceback
-                    #print empty line to preserve counter
-                    print('')
-                    print(count)
-                    print(e)
-                    traceback.print_exc()
-                    print(xapi)
-                    if not isinstance(e, MissingConverterError):
-                        sys.exit(1)
-            else:
-                print("No statement in line", count)
+            except Exception as e:
+                import traceback
+                #print empty line to preserve counter
+                print('')
+                print(count)
+                print(e)
+                traceback.print_exc()
+                print(xapi)
+                if not isinstance(e, MissingConverterError):
+                    sys.exit(1)
         print('')
         #end writer thread
-        print("Ending json writer thread")
-        STATEMENT_QUEUE.put(None)
-        STATEMENT_QUEUE.join()
+        if not args.no_dump:
+            print("Ending json writer thread")
+            STATEMENT_QUEUE.put(None)
+            STATEMENT_QUEUE.join()
         #close handles
     f.close()
     print("Program finished")
