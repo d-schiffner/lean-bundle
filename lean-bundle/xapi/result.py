@@ -24,6 +24,7 @@ def parse(fibers, statement):
         if "scaled" in res.score:
             data.append(_score_parser(res.score.scaled))
     result_dset = fibers.create_dataset("result", data=data)
-    result_dset.attrs["success"] = res.success
+    if "success" in res:
+        result_dset.attrs["success"] = res.success
     if "response" in res:
         result_dset.attrs["response"] = np.string_(res.response.encode())

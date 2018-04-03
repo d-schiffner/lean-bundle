@@ -93,3 +93,12 @@ def create(fibers, bundle, statement):
     #del dcpl
     #del space_id
     #del dset
+
+# Results on interaction storage
+# Vigor first 10k       100k       627k 
+# DSET:       18.210kb  179.254kb  x
+# Empty DSET: 18.054kb  177.700kb  x
+# Comp. DSET: 18.213kb  179.292kb  x
+# Group:      23.754kb  234.724kb  x
+# Attribs:    13.735kb  132.930kb  x
+# Json:        9.106kb   92.330kb  x
