@@ -1,4 +1,4 @@
-from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
+from utils.datatypes import ACTOR_TYPE_MAP
 
 def name(statement):
     return  statement.authority.name if not 'authority' in statement or not 'name' in statement.authority else 'anon'
@@ -11,7 +11,7 @@ def get(bundle, statement):
         return bundle['/user/'+auth.name]
     auth_grp = bundle.create_group('/user/{}'.format(auth.name))
     if 'objectType' in auth:
-        auth_grp.attrs.create('type', ACTOR_TYPE_MAP[auth.objectType.lower()], dtype=USER_TYPE_DT)
+        auth_grp.attrs.create('type', ACTOR_TYPE_MAP[auth.objectType.lower()])
     if 'mbox' in auth:
         auth_grp.attrs['mbox'] = auth.mbox
     #TODO: check for others

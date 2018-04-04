@@ -1,15 +1,15 @@
 import numpy as np
 import hashlib
 from xapi import authority, actor
-from utils.group import LeanDataset, LeanGroup
-from utils.datatypes import INTERACTIVE_LO_DT, INTERACTIVE_LO_TYPE_MAP
+from utils.datatypes import INTERACTIVE_LO_TYPE_MAP
 from utils.error import MissingConverterError
+from backend import *
 __URL2LO = {}
 __CONTEXT = {}
 
 def _create_choice_lo(lo, definition):
     #create a choice lo structure
-    lo.attrs.create('type', INTERACTIVE_LO_TYPE_MAP['choice'], dtype=INTERACTIVE_LO_DT)
+    lo.attrs.create('type', INTERACTIVE_LO_TYPE_MAP['choice'])
     choices = lo.create_group('choices')
     correctResponses = definition.correctResponsesPattern if 'correctResponsesPattern' in definition else []
     for obj in definition.choices:

@@ -7,16 +7,18 @@ import time
 from os import path
 from argparse import ArgumentParser
 from utils.json import JSONObject
-from utils.group import LeanGroup
 from utils.error import *
 from utils.files import linecount
 from utils.console import update_line
 from xapi import actor, authority, date, lo, interaction, result, context
+
 #multithreading
 from queue import Queue
 from threading import Thread
 
 logging.basicConfig(level=logging.INFO)
+#load the backend
+import backend
 
 def process_statement(bundle, xapi):
     log = logging.getLogger()
@@ -80,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('--limit', default=None, help="Limit to x entries", type=int)
     parser.add_argument('--no-line-count', default=False, help="Skip counting lines", action="store_true")
-    parser.add_argument('--no-dump', default=False, help="Prevent dump converted parts of the statements", action="store_true")
+    parser.add_argument('--dump', default=False, help="Prevent dump converted parts of the statements", action="store_true")
     parser.add_argument('file', help="The file to read the xAPI Statements from")
     parser.add_argument('-v', '--verbose', help="Verbose logging", action='store_true')
     args = parser.parse_args()
@@ -92,28 +94,25 @@ if __name__ == "__main__":
         #guess filename
         base, _ = path.splitext(args.file)
         args.out = base + '.lean'
-        args.dump = base + "_dump.json"
-        if not args.no_dump and path.exists(args.dump):
+        args.dump = base + "_dump.json" if args.dump else None
+        if args.dump and path.exists(args.dump):
             import os
             os.remove(args.dump)
+    num_lines = linecount(args.file) if not args.no_line_count else 0
     print("Creating file", args.out)
     if(args.replace):
         print("Replacing content in bundle")
-        f = h5py.File(args.out, 'w')
+        f = LeanFile(args.out, 'w')
     else:
         print("Appending to existing bundle")
-        f = h5py.File(args.out)
-    num_lines = linecount(args.file) if not args.no_line_count else 0
+        f = LeanFile(args.out)
     if args.limit:
         num_lines = min(num_lines, args.limit)
     #create default groups
-    f.create_group('user')
-    f.create_group('lo')
-    f.create_group('interaction')
     last = time.monotonic()
     #read statements
     with open(args.file, 'r') as data_file:
-        if not args.no_dump:
+        if args.dump:
             writer_thread = Thread(target=writer_worker, args=(args.dump,))
             writer_thread.setDaemon(True)
             writer_thread.start()
@@ -131,7 +130,7 @@ if __name__ == "__main__":
             xapi = json.loads(line, object_hook=JSONObject)
             try:
                 conv = process_statement(f, xapi)
-                if not args.no_dump:
+                if args.dump:
                     STATEMENT_QUEUE.put(conv)
             except Exception as e:
                 import traceback
@@ -147,7 +146,7 @@ if __name__ == "__main__":
         update_line("Statement", count, '/', num_lines)
         print('')
         #end writer thread
-        if not args.no_dump:
+        if args.dump:
             print("Ending json writer thread")
             STATEMENT_QUEUE.put(None)
             STATEMENT_QUEUE.join()

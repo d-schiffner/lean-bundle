@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 from utils.json import JSONObject
-from utils.datatypes import USER_TYPE_DT, ACTOR_TYPE_MAP
+from utils.datatypes import ACTOR_TYPE_MAP
 
 __log = logging.getLogger()
 
@@ -14,14 +14,14 @@ def create_user(authority_grp, actor):
     #doesn't exist -> create
     user_grp = authority_grp.create_group(name)
     #set the group's attributes
-    user_grp.attrs.create('type', ACTOR_TYPE_MAP[actor.objectType.lower()], dtype=USER_TYPE_DT)
+    user_grp.attrs.create('type', ACTOR_TYPE_MAP[actor.objectType.lower()])
     if 'account' in actor:
         if 'mbox' in actor.account:
             user_grp.attrs['mbox'] = np.string_(actor.account.mbox)
         if 'homePage' in actor.account:
             user_grp.attrs['homepage'] = np.string_(actor.account.homePage)
         if "name" in actor.account:
-            user_grp.attrs["name"] = np.string_(actor.account.name)
+            user_grp.attrs["name"] = np.string_(actor.account.name.encode())
     else:
         __log.warn("Unknown params %s", actor)
     #TODO: set other keys

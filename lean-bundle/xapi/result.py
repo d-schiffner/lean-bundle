@@ -13,8 +13,8 @@ def parse(fibers, statement):
     if not 'result' in statement:
         return
     res = statement.result
+    data = []
     if "score" in res:
-        data = []
         if "raw" in res.score:
             data.append(_score_parser(res.score.raw))
         if "min" in res.score:
