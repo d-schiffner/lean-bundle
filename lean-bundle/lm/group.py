@@ -1,12 +1,8 @@
-from os import path
-from lmdb import 
-
-
-class LeanBase():
-    def __init__(self, name, backend):
-        self.name = path.abspath(name)
+class LeanGroup():
+    def __init__(self, backend, name):
         self.backend = backend
-        self.attrs = dict()
+        self.attrs = {}
+        self.name = name
     
     def __getitem__(self, x):
         if not path.isabs(x):
@@ -18,3 +14,12 @@ class LeanBase():
         d['name'] = self.name
         d['attrs'] = self.attrs.copy()
         return d
+    
+    def __getattr__(self, x):
+        pass
+
+    def create_group(self, name):
+        return self.backend[name]
+
+    def require_group(self, name):
+        return self.backend[name]

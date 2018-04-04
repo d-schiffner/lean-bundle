@@ -1,6 +1,5 @@
 from utils.writable import Writable
-from .base import LeanBase
 
-class LeanDataset(Writable, LeanBase):
+class LeanDataset(Writable):
     def __init__(self):
         pass
