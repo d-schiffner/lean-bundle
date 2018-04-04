@@ -56,7 +56,7 @@ def _create(bundle, statement):
             else:
                 raise MissingConverterError("Unknown interaction type: {}".format(definition.interactionType))
         else:
-            LeanGroup(new_lo).from_json(definition)
+            new_lo.from_json(definition).write()
     return new_lo
 
 def create(bundle, statement):
