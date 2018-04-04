@@ -37,7 +37,7 @@ class InteractionCreator():
     def write_definition(self):
         verb = self.statement.verb
         if 'display' in verb:
-            LeanDataset(self.group, 'display').from_json(verb.display)
+            LeanDataset(self.group, 'display').from_json(verb.display).write()
 
     def check_definition(self):
         if 'display' in self.statement.verb and not 'display' in self.group:
@@ -49,22 +49,22 @@ class InteractionCreator():
         pass
 
 
-def create(fibers, bundle, statement):
+def create(fibers, statement):
     global ONCE
     #print("Interaction is {}/{}".format(auth,id))
-    inter = InteractionCreator(bundle, statement)
+    inter = InteractionCreator(fibers, statement)
     inter.create()
     #TODO: Check if we want to automatically trace uses!?
     #create data for fiber
-    data = [inter.group.ref]
+    data = [inter.group]
     #create a learning object based on the object (if it does not refer to a user or another statement)
     object = statement.object
     #print("Type: {}".format(object.objectType.lower()))
     if object.objectType.lower() == 'activity':
         #object references an lo
         #create it
-        learning_object = lo.create(bundle, statement)
-        data.append(learning_object.ref)
+        learning_object = lo.create(fibers, statement)
+        data.append(learning_object)
         #print("Created activity entry")
     else:
         raise MissingConverterError(object.objectType, "not implemented yet")

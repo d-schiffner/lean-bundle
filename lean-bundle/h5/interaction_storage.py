@@ -1,9 +1,12 @@
 #test for interaction storage
 import h5py
+from os import getenv
 from .datatypes import REF_DT
 
 def interaction_storage(fibers, data):
     storage_type = getenv('LEAN_INTERACTION_H5_STORAGE', 'ATTRIB').lower()
+    fibers = fibers.h5obj
+    data = [x.h5obj.ref for x in data]
     if storage_type == 'dset':
         #NOTE: Direct creation of dataset
         fibers.create_dataset('interaction', data=data, dtype=REF_DT)

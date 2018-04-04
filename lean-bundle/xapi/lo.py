@@ -4,8 +4,9 @@ from xapi import authority, actor
 from utils.datatypes import INTERACTIVE_LO_TYPE_MAP
 from utils.error import MissingConverterError
 from backend import *
+
 __URL2LO = {}
-__CONTEXT = {}
+
 
 def _create_choice_lo(lo, definition):
     #create a choice lo structure
@@ -18,37 +19,15 @@ def _create_choice_lo(lo, definition):
             if k == 'id':
                 continue
             #create a dataset from json
-            LeanDataset(c, k).from_json(v)
+            with LeanDataset(c, k) as lgd:
+                lgd.from_json(v)
         c.attrs.create('correct', obj.id in correctResponses)
     #write out remaining data
-    LeanGroup(lo).from_json(definition, ['choices', 'type', 'correctResponsesPattern'])
+    lo.from_json(definition, ['choices', 'type', 'correctResponsesPattern']).write()
 
 def _find_matching(los, object):
     global __URL2LO
     return __URL2LO[object.id] if object.id in __URL2LO else None
-
-
-def update_context(lo, statement):
-    global __CONTEXT
-    #check for context
-    if 'context' in statement and statement.context:
-        #TODO: define good hash
-        sha = hashlib.sha1(str(",".join(sorted([k for k,v in statement.context.items()]))).encode()).hexdigest()
-        if 'context' in lo:
-            if lo['context'].attrs['hash'] != sha:
-                #TODO: Define what to do
-                pass
-        else:
-            ctx_grp = lo.create_group('context')
-            ctx = statement.context
-            if 'instructor' in ctx:
-                auth_grp = authority.get(lo, statement)
-                user_grp = actor.create_user(auth_grp, ctx.instructor)
-                ctx_grp.attrs['instructor'] = user_grp.ref
-            if 'statement' in ctx:
-                raise MissingConverterError('StatementRefs not implemented')
-            LeanGroup(ctx_grp).from_json(ctx, ignore=['instructor', 'statement'])
-            ctx_grp.attrs['hash'] = sha
 
 
 def _create(bundle, statement):

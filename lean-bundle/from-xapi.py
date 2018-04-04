@@ -18,7 +18,7 @@ from threading import Thread
 
 logging.basicConfig(level=logging.INFO)
 #load the backend
-import backend
+from backend import *
 
 def process_statement(bundle, xapi):
     log = logging.getLogger()
@@ -28,7 +28,8 @@ def process_statement(bundle, xapi):
     statement = xapi.statement
     log.debug("Found statement: {} {} {}".format(statement.actor.name, statement.verb.id, statement.object.id))
     #create authority
-    auth_grp = authority.get(bundle, statement)
+    root = LeanGroup(bundle)
+    auth_grp = authority.get(root, statement)
     #create user group if not existing
     user_grp = actor.create_user(auth_grp, statement.actor)
     #TODO: how to identify configuration?
@@ -49,7 +50,7 @@ def process_statement(bundle, xapi):
     #create fibers
     #copy id
     fibers.attrs['id'] = np.string_(statement.id)
-    interaction.create(fibers, bundle, statement)
+    interaction.create(fibers, statement)
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
     #replace stored

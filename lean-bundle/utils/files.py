@@ -23,5 +23,6 @@ def linecount(file):
                 break
             count += buffer.count(b'\n')
         #clear the line
-        update_line(' '*70)
+        update_line("File has {} lines".format(count))
+        print('')
         return count

@@ -4,3 +4,9 @@ class LeanGroup(LeanBase):
     
     def __getattr__(self, x):
         pass
+
+    def create_group(self, name):
+        pass
+
+    def require_group(self, name):
+        pass
