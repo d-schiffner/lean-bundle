@@ -18,23 +18,26 @@ class LeanGroup(LeanBase):
             else:
                 self.attrs[k] = v
         return self
+    
+    def _get_container_data(self, name):
+        fullpath = path.join(self.name, name)
+        dir, key = path.split(fullpath)
+        container = self.backend.find_parent(dir, True)
+        return (container, fullpath, key)
 
     def create_group(self, name):
-        fullpath, key = path.split(path.join(self.name, name))
-        print("Searching parent", fullpath)
-        container = self.backend.find_parent(fullpath)
-        print("Parent is", container)
+        container, fullpath, key = self._get_container_data(name)
         if key in container:
-            raise Exception("Key {} already exists".format(key))
-        container[key] = LeanGroup(self.backend, key)
+            raise Exception("Key {} already exists".format(fullpath))
+        container[key] = LeanGroup(self.backend, fullpath)
         return container[key]
 
     def require_group(self, name):
-        fullpath, key = path.split(path.join(self.name, name))
-        print("Searching parent", fullpath)
-        container = self.backend.find_parent(fullpath)
-        print("Found", container)
+        container, fullpath, key = self._get_container_data(name)
         if key in container:
             return container[key]
-        container[key] = LeanGroup(self.backend, key)
+        container[key] = LeanGroup(self.backend, fullpath)
         return container[key]
+
+    def __repr__(self):
+        return "Group {} [{}]: {}".format(self.name, len(self.data), self._attrs)

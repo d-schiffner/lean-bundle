@@ -55,14 +55,22 @@ class LeanBase(Writable):
     def values(self):
         return self.data.values()
 
-    def __contains__(self, key):
-        return key in self.data
+    def __contains__(self, name):
+        fullpath, key = path.split(path.join(self.name, name))
+        container = self._backend.find_parent(fullpath)
+        if not container:
+            return False
+        return key in container.data
 
-    def __getitem__(self, key):
-        return self.data[key]
+    def __getitem__(self, name):
+        fullpath, key = path.split(path.join(self.name, name))
+        container = self._backend.find_parent(fullpath)
+        return container.data[key]
 
-    def __setitem__(self, key, value):
-        self.data[key] = value
+    def __setitem__(self, name, value):
+        fullpath, key = path.split(path.join(self.name, name))
+        container = self._backend.find_parent(fullpath)
+        container.data[key] = value
 
     def __getstate__(self):
         d = self.__dict__.copy()

@@ -3,7 +3,8 @@ from fdict import sfdict
 
 class LeanFile():
     def __init__(self, filename, mode=None):
-        if mode == 'w' and os.path.exists(filename):
+        self.mode = mode
+        if mode and 'w' in mode and os.path.exists(filename):
             os.remove(filename)
         self.storage = sfdict(filename=filename)
         self._setup()
@@ -11,6 +12,8 @@ class LeanFile():
     def __getitem__(self, name):
         tmp = self.storage['root']
         tmp.backend = self
+        if name == '/':
+            return tmp
         return tmp[name]
     
     def _setup(self):
@@ -19,22 +22,34 @@ class LeanFile():
         if not 'root' in self.storage:
             self.storage['root'] = LeanGroup(self, '/')
         self.root = self.storage['root']
+        #store backend in case it has been retreived
+        self.root.backend = self
         self.root.require_group('/user')
         self.root.require_group('/interaction')
         self.root.require_group('/lo')
 
-    def find_parent(self, path):
+    def find_parent(self, path, create=False):
+        from .group import LeanGroup
+        if path == '/':
+            return self.root
         parts = path.split('/')
         assert parts[0] == ''
-        parts = parts[1:-1]
+        parts = parts[1:]
+        if parts[0] == '':
+            return self.root
         cur = self.root
         traversed = []
         for p in parts:
-            if p in cur:
+            if not isinstance(cur, LeanGroup):
+                return None
+            if p in cur.data:
                 cur = cur[p]
-                traversed.append(p)
+            elif create:
+                #create
+                cur = cur.create_group(p)
             else:
                 return None
+            traversed.append(p)
         return cur
 
     def sync(self):
@@ -42,15 +57,10 @@ class LeanFile():
         self.storage.sync()
 
     def close(self):
-        self.storage.sync()
-        print("Dumping")
-        for k in self.storage.keys():
-            print(k)
         self.storage.close()
 
     def __enter__(self):
         return self
     
     def __exit__(self, exc_type, exc_value, traceback):
-        self.sync()
         self.close() 

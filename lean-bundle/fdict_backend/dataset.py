@@ -10,3 +10,6 @@ class LeanDataset(LeanBase):
     def from_json(self, json):
         self.data.update(json.__dict__)
         return self
+
+    def __repr__(self):
+        return "DS {}: {} / {}".format(self.name, self.data, self._attrs)
