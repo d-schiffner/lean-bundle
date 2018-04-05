@@ -23,7 +23,7 @@ def _create_choice_lo(lo, definition):
                 lgd.from_json(v)
         c.attrs.create('correct', obj.id in correctResponses)
     #write out remaining data
-    lo.from_json(definition, ['choices', 'type', 'correctResponsesPattern']).write()
+    lo.from_json(definition, ['choices', 'type', 'correctResponsesPattern']).sync()
 
 def _find_matching(los, object):
     global __URL2LO
@@ -42,8 +42,8 @@ def _create(bundle, statement):
         return new_lo
     nid = len(los.keys())
     #print("Creating a new lo")
-    new_lo = los.create_group(str(nid))
-    new_lo.attrs['url'] = np.string_(object.id)
+    new_lo = los.create_group('lo'+str(nid))
+    new_lo.attrs['url'] = object.id
     __URL2LO[object.id] = new_lo
     #TODO: identify authority of lo?
     new_lo.attrs['auth'] = 'anon'
@@ -56,7 +56,7 @@ def _create(bundle, statement):
             else:
                 raise MissingConverterError("Unknown interaction type: {}".format(definition.interactionType))
         else:
-            new_lo.from_json(definition).write()
+            new_lo.from_json(definition).sync()
     return new_lo
 
 def create(bundle, statement):

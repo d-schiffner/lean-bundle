@@ -27,7 +27,7 @@ class LeanGroup(Writable):
         grp = self.h5obj.require_group(name)
         return LeanGroup(grp)
 
-    def write(self):
+    def sync(self):
         for k,v in self.data.items():
             tv = type(v)
             if tv is [str, bool]:

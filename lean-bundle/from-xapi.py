@@ -1,5 +1,3 @@
-import h5py
-import numpy as np
 import sys
 import json
 import logging
@@ -28,8 +26,7 @@ def process_statement(bundle, xapi):
     statement = xapi.statement
     log.debug("Found statement: {} {} {}".format(statement.actor.name, statement.verb.id, statement.object.id))
     #create authority
-    root = LeanGroup(bundle)
-    auth_grp = authority.get(root, statement)
+    auth_grp = authority.get(bundle, statement)
     #create user group if not existing
     user_grp = actor.create_user(auth_grp, statement.actor)
     #TODO: how to identify configuration?
@@ -49,7 +46,7 @@ def process_statement(bundle, xapi):
     fibers = config_grp.create_group(time)
     #create fibers
     #copy id
-    fibers.attrs['id'] = np.string_(statement.id)
+    fibers.attrs['id'] = statement.id
     interaction.create(fibers, statement)
     stored = date.timestamp(xapi,'stored')
     fibers.attrs.create('stored', stored)
@@ -58,6 +55,7 @@ def process_statement(bundle, xapi):
     statement.stored = statement.stored if 'stored' in statement else xapi.stored
     result.parse(fibers, statement)
     context.parse(auth_grp, fibers, statement)
+    #bundle.sync()
     return statement
 
 STATEMENT_QUEUE = Queue()

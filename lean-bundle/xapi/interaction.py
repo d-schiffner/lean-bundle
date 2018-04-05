@@ -1,4 +1,3 @@
-import h5py
 import numpy as np
 from xapi import lo
 from os import getenv
@@ -37,9 +36,10 @@ class InteractionCreator():
     def write_definition(self):
         verb = self.statement.verb
         if 'display' in verb:
-            LeanDataset(self.group, 'display').from_json(verb.display).write()
+            LeanDataset(self.group, 'display').from_json(verb.display).sync()
 
     def check_definition(self):
+        return
         if 'display' in self.statement.verb and not 'display' in self.group:
             print("WARN: Definition was missing for {}".format(self.group.name))
             self.write_definition()

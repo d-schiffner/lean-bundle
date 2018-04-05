@@ -34,7 +34,7 @@ class LeanDataset(Writable):
             dset = self.parent.create_dataset(self.name, shape=(len(self.data),), maxshape=(None,), dtype=KEY_VALUE_DT)
             dset[...] = tmpdata
 
-    def write(self):
+    def sync(self):
         #write data
         getattr(self, "_as_" + LeanDataset.STORAGE_METHOD)()
         return self

@@ -1,6 +1,6 @@
 
 class Writable(object):
-    def write(self):
+    def sync(self):
         pass
 
     def __enter__(self):
@@ -10,4 +10,4 @@ class Writable(object):
         if exc_type:
             #don't write, if an exception occured
             return
-        self.write()
+        self.sync()
