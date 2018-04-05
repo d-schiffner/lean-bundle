@@ -56,7 +56,7 @@ class LeanBase(Writable):
         return self.data.values()
 
     def __contains__(self, key):
-        return path.join(self.name, key) in self.backend
+        return key in self.data
 
     def __getitem__(self, key):
         return self.data[key]

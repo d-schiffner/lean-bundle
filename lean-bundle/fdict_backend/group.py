@@ -20,15 +20,21 @@ class LeanGroup(LeanBase):
         return self
 
     def create_group(self, name):
-        key = path.join(self.name, name)
-        if key in self.backend:
+        fullpath, key = path.split(path.join(self.name, name))
+        print("Searching parent", fullpath)
+        container = self.backend.find_parent(fullpath)
+        print("Parent is", container)
+        if key in container:
             raise Exception("Key {} already exists".format(key))
-        grp = self.backend[key] = LeanGroup(self.backend, key)
-        return grp
+        container[key] = LeanGroup(self.backend, key)
+        return container[key]
 
     def require_group(self, name):
-        key = path.join(self.name, name)
-        if key in self.backend:
-            return self.backend[key]
-        grp = self.backend[key] = LeanGroup(self.backend, key)
-        return grp
+        fullpath, key = path.split(path.join(self.name, name))
+        print("Searching parent", fullpath)
+        container = self.backend.find_parent(fullpath)
+        print("Found", container)
+        if key in container:
+            return container[key]
+        container[key] = LeanGroup(self.backend, key)
+        return container[key]
