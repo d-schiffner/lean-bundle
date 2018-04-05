@@ -16,17 +16,17 @@ class LeanFile(sfdict):
 
     def _setup(self):
         from .group import LeanGroup
-        #create root
-        root = self['/'] = LeanGroup(self, '/')
-        if not '/user' in self:
-            root.create_group('/user')
-        if not '/interaction' in self:
-            root.create_group('/interaction')
-        if not '/lo' in self:
-            root.create_group('/lo')
+        #create root (empty path)
+        if not '' in self:
+            self[''] = LeanGroup(self, '')
+        root = self['']
+        root.require_group('/user')
+        root.require_group('/interaction')
+        root.require_group('/lo')
 
     def close(self):
         self.sync()
+        print("Dumping")
         for k in self.keys():
             print(k)
         super().close()

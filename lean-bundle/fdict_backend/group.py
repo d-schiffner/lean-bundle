@@ -27,7 +27,7 @@ class LeanGroup(LeanBase):
         return grp
 
     def require_group(self, name):
-        key = path.abspath(path.join(self.name, name))[1:]
+        key = path.join(self.name, name)
         if key in self.backend:
             return self.backend[key]
         grp = self.backend[key] = LeanGroup(self.backend, key)

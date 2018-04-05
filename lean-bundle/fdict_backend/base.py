@@ -26,7 +26,6 @@ class LeanBase(Writable):
         self._attrs = {}
         self.data = {}
         self._backend = backend
-        #must be here
 
     def valid(self):
         return self._backend != None
@@ -39,7 +38,7 @@ class LeanBase(Writable):
     def backend(self, backend):
         self._backend = backend
         #update sub items
-        for k,v in self.data.items():
+        for v in self.data.values():
             if isinstance(v, LeanBase):
                 v.backend = backend
 
@@ -53,14 +52,14 @@ class LeanBase(Writable):
     def keys(self):
         return self.data.keys()
 
+    def values(self):
+        return self.data.values()
+
     def __contains__(self, key):
         return path.join(self.name, key) in self.backend
 
     def __getitem__(self, key):
-        #use fast access to sfdict by path encoding
-        pathname = path.join(self.name, key)
-        #print("Fast lane", pathname)
-        return self.backend[pathname]
+        return self.data[key]
 
     def __setitem__(self, key, value):
         self.data[key] = value
