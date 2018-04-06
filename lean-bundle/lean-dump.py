@@ -3,11 +3,11 @@ from argparse import ArgumentParser
 
 def traverse(group):
     print(group)
-    for k in group.keys():
-        v = group[k]
+    for k,v in group.items():
+        print(v)
+        print(v.keys())
         if isinstance(v, LeanGroup):
             traverse(v)
-            #return traverse(v)
 
 if __name__ == "__main__":
     parser = ArgumentParser("LeAn Dump")

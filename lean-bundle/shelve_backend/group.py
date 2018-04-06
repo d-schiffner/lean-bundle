@@ -22,7 +22,10 @@ class LeanGroup(LeanBase):
     def _get_container_data(self, name):
         fullpath = path.join(self.name, name)
         dir, key = path.split(fullpath)
-        container = self.backend.find_parent(dir, True)
+        if dir != self.name:
+            container = self.backend.find_parent(dir, True)
+        else:
+            container = self
         return (container, fullpath, key)
 
     def create_group(self, name):
@@ -40,4 +43,4 @@ class LeanGroup(LeanBase):
         return container[key]
 
     def __repr__(self):
-        return "Group {} [{}]: {}".format(self.name, len(self.data), self._attrs)
+        return "Group {} [{}]: {}".format(self.name, len(self.nodes), self._attrs)

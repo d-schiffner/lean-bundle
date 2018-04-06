@@ -27,7 +27,8 @@ class LeanBase(Writable):
         self.name = name
         #print("Lean Base:",name)
         self._attrs = {}
-        self.data = {}
+        #store direct children here for fast lookup
+        self.nodes = set()
         self._backend = backend
 
     def valid(self):
@@ -49,42 +50,49 @@ class LeanBase(Writable):
         return LeanAttribs(self)
 
     def items(self):
-        for k in self.data.keys():
+        for k in self.keys():
             yield k, self[k]
 
     def keys(self):
-        return self.data.keys()
+        return sorted(self.nodes)
 
     def values(self):
-        for k in self.data.keys():
+        for k in self.keys():
             yield self[k]
 
     def __contains__(self, name):
-        fullpath, key = path.split(path.join(self.name, name))
-        container = self._backend.find_parent(fullpath)
-        if not container:
-            return False
-        return key in container.data
+        fullpath = path.join(self.name, name)
+        return fullpath in self.backend.storage
 
     def __getitem__(self, name):
-        fullpath, key = path.split(path.join(self.name, name))
-        container = self._backend.find_parent(fullpath)
-        return container.data[key]
+        fullpath = path.join(self.name, name)
+        item = self._backend.storage[fullpath]
+        #may be loaded from file -> set backend
+        item._backend = self._backend
+        return item
 
     def __setitem__(self, name, value):
-        fullpath, key = path.split(path.join(self.name, name))
-        container = self._backend.find_parent(fullpath)
-        container.data[key] = value
+        fullpath = path.join(self.name, name)
+        directory, key = path.split(fullpath)
+        if directory != self.name:
+            container = self._backend.find_parent(directory)
+        else:
+            container = self
+        #store lookup
+        container.nodes.add(key)
+        self._backend.storage[fullpath] = value
 
     def __getstate__(self):
         d = self.__dict__.copy()
-        del d['_backend']
+        if '_backend' in d:
+            del d['_backend']
         return d
 
     def __setstate__(self, obj):
         self.__dict__ = obj
 
     def sync(self):
+        #self.backend.sync()
         pass
 
     def __repr__(self):

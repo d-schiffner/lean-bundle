@@ -1,5 +1,5 @@
 import os
-from fdict import sfdict
+import shelve
 
 class LeanFile():
     def __init__(self, filename, mode=None):
@@ -7,7 +7,7 @@ class LeanFile():
         if mode and 'w' in mode and os.path.exists(filename):
             os.remove(filename)
         self.filename = filename
-        self.storage = sfdict(filename=self.filename)
+        self.storage = shelve.open(self.filename, writeback=True)
         self._setup()
 
     def __getitem__(self, name):
@@ -43,8 +43,8 @@ class LeanFile():
         for p in parts:
             if not isinstance(cur, LeanGroup):
                 return None
-            if p in cur.data:
-                cur = cur.data[p]
+            if p in cur.nodes:
+                cur = cur[p]
                 cur._backend = self
             elif create:
                 #create
