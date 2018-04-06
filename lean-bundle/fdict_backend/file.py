@@ -6,7 +6,8 @@ class LeanFile():
         self.mode = mode
         if mode and 'w' in mode and os.path.exists(filename):
             os.remove(filename)
-        self.storage = sfdict(filename=filename)
+        self.filename = filename
+        self.storage = sfdict(filename=self.filename)
         self._setup()
 
     def __getitem__(self, name):
@@ -43,7 +44,8 @@ class LeanFile():
             if not isinstance(cur, LeanGroup):
                 return None
             if p in cur.data:
-                cur = cur[p]
+                cur = cur.data[p]
+                cur._backend = self
             elif create:
                 #create
                 cur = cur.create_group(p)

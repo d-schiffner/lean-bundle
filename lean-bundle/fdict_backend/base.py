@@ -7,6 +7,9 @@ class LeanAttribs():
     
     def create(self, key, value):
         self.parent._attrs[key] = value
+
+    def modify(self, key, value):
+        self.parent._attrs[key] = value
     
     def __contains__(self, key):
         return key in self.parent._attrs
@@ -37,11 +40,10 @@ class LeanBase(Writable):
     @backend.setter
     def backend(self, backend):
         self._backend = backend
-        #update sub items
-        for v in self.data.values():
-            if isinstance(v, LeanBase):
-                v.backend = backend
 
+    @property
+    def ref(self):
+        return self
     @property
     def attrs(self):
         return LeanAttribs(self)
