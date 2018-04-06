@@ -93,7 +93,9 @@ if __name__ == "__main__":
         #guess filename
         base, _ = path.splitext(args.file)
         args.out = base + '.lean'
-        args.dump = base + "_dump.json" if args.dump else None
+    if args.dump:
+        base, _ = path.splitext(args.out)
+        args.dump = base + "_dump.json"
         if args.dump and path.exists(args.dump):
             import os
             os.remove(args.dump)

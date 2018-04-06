@@ -1,13 +1,14 @@
 import os
 import shelve
+from pickle import HIGHEST_PROTOCOL
 
 class LeanFile():
-    def __init__(self, filename, mode=None):
+    def __init__(self, filename, mode='r'):
         self.mode = mode
-        if mode and 'w' in mode and os.path.exists(filename):
-            os.remove(filename)
+        if mode and 'w' == mode:
+            self.mode = 'c'
         self.filename = filename
-        self.storage = shelve.open(self.filename, writeback=True)
+        self.storage = shelve.open(self.filename, flag=self.mode, writeback=True, protocol=HIGHEST_PROTOCOL)
         self._setup()
 
     def __getitem__(self, name):
