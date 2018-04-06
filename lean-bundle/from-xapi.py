@@ -77,7 +77,7 @@ if __name__ == "__main__":
     print("Converting xAPI from JSON to LeAn Bundle")
     parser = ArgumentParser("LeAn Bundle xAPI Parser")
     parser.add_argument('--out')
-    parser.add_argument('--replace', '-r', help="Replace the file with the new content", action='store_true')
+    parser.add_argument('--keep', '-k', help="Keep the file and extend with the new content", action='store_true')
     parser.add_argument('--skip', default=0, help="Skip the first x entries", type=int)
     parser.add_argument('--limit', default=None, help="Limit to x entries", type=int)
     parser.add_argument('--no-line-count', default=False, help="Skip counting lines", action="store_true")
@@ -99,12 +99,12 @@ if __name__ == "__main__":
             os.remove(args.dump)
     num_lines = linecount(args.file) if not args.no_line_count else 0
     print("Creating file", args.out)
-    if(args.replace):
-        print("Replacing content in bundle")
-        f = LeanFile(args.out, 'w')
-    else:
+    if(args.keep):
         print("Appending to existing bundle")
         f = LeanFile(args.out)
+    else:
+        print("Replacing content in bundle")
+        f = LeanFile(args.out, 'w')
     if args.limit:
         num_lines = min(num_lines, args.limit)
     #create default groups
