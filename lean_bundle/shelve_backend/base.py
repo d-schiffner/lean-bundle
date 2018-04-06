@@ -5,6 +5,9 @@ class LeanAttribs():
     def __init__(self, parent):
         self.parent = parent
     
+    def keys(self):
+        return self.parent._attrs.keys()
+        
     def create(self, key, value):
         self.parent._attrs[key] = value
 
