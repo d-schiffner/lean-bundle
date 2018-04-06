@@ -9,6 +9,6 @@ elif _requested_backend == 'lmdb':
     from lmdb_backend import *
 elif _requested_backend == 'shelve':
     print("Using shelve backend")
-    from fdict_backend import *
+    from shelve_backend import *
 else:
     raise ImportError('Unknown backend')

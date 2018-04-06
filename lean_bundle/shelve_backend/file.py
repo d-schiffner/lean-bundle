@@ -28,6 +28,7 @@ class LeanFile():
         self.root.require_group('/user')
         self.root.require_group('/interaction')
         self.root.require_group('/lo')
+        self.root.require_group('/scripts')
 
     def find_parent(self, path, create=False):
         from .group import LeanGroup
