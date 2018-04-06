@@ -49,13 +49,15 @@ class LeanBase(Writable):
         return LeanAttribs(self)
 
     def items(self):
-        return self.data.items()
+        for k in self.data.keys():
+            yield k, self[k]
 
     def keys(self):
         return self.data.keys()
 
     def values(self):
-        return self.data.values()
+        for k in self.data.keys():
+            yield self[k]
 
     def __contains__(self, name):
         fullpath, key = path.split(path.join(self.name, name))
