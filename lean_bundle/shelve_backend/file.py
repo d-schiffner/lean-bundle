@@ -3,10 +3,10 @@ import shelve
 from pickle import HIGHEST_PROTOCOL
 
 class LeanFile():
-    def __init__(self, filename, mode='r'):
+    def __init__(self, filename, mode='c'):
         self.mode = mode
         if mode and 'w' == mode:
-            self.mode = 'c'
+            self.mode = 'n'
         self.filename = filename
         self.storage = shelve.open(self.filename, flag=self.mode, writeback=True, protocol=HIGHEST_PROTOCOL)
         self._setup()
@@ -47,7 +47,7 @@ class LeanFile():
                 return None
             if p in cur.nodes:
                 cur = cur[p]
-                cur._backend = self
+                cur.backend = self
             elif create:
                 #create
                 cur = cur.create_group(p)

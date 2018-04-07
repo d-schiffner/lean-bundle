@@ -23,7 +23,6 @@ class LeanAttribs():
     def __setitem__(self, key, value):
         self.parent._attrs[key] = value
 
-
 class LeanBase(Writable):
     def __init__(self, backend, name):
         super().__init__()
@@ -32,22 +31,15 @@ class LeanBase(Writable):
         self._attrs = {}
         #store direct children here for fast lookup
         self.nodes = set()
-        self._backend = backend
+        self.backend = backend
 
     def valid(self):
-        return self._backend != None
-
-    @property
-    def backend(self):
-        return self._backend
-    
-    @backend.setter
-    def backend(self, backend):
-        self._backend = backend
+        return self.backend != None
 
     @property
     def ref(self):
-        return self
+        return LeanRef(self.backend, self.name)
+
     @property
     def attrs(self):
         return LeanAttribs(self)
@@ -69,30 +61,27 @@ class LeanBase(Writable):
 
     def __getitem__(self, name):
         fullpath = path.join(self.name, name)
-        item = self._backend.storage[fullpath]
+        item = self.backend.storage[fullpath]
         #may be loaded from file -> set backend
-        item._backend = self._backend
+        item.backend = self.backend
         return item
 
     def __setitem__(self, name, value):
         fullpath = path.join(self.name, name)
         directory, key = path.split(fullpath)
         if directory != self.name:
-            container = self._backend.find_parent(directory)
+            container = self.backend.find_parent(directory)
         else:
             container = self
         #store lookup
         container.nodes.add(key)
-        self._backend.storage[fullpath] = value
+        self.backend.storage[fullpath] = value
 
     def __getstate__(self):
         d = self.__dict__.copy()
-        if '_backend' in d:
-            del d['_backend']
+        if 'backend' in d:
+            del d['backend']
         return d
-
-    def __setstate__(self, obj):
-        self.__dict__ = obj
 
     def sync(self):
         #self.backend.sync()
@@ -100,3 +89,69 @@ class LeanBase(Writable):
 
     def __repr__(self):
         return "Obj {} ({})".format(self.name, hex(id(self)))
+
+class LeanRef(Writable):
+    def __init__(self, backend, name):
+        self.backend = backend
+        self.name = name
+        self._target = None
+
+    @property
+    def ref(self):
+        print("WARNING: You want to use ref to ref??")
+        return self
+
+    @property
+    def target(self):
+        if not self._target:
+            self._target = self.backend.storage[self.name]
+        return self._target
+
+    @property
+    def attrs(self):
+        return self.target.attrs
+
+    def __getattr__(self, name):
+        if name in ['backend', 'name', '_target']:
+            return self.__dict__[name]
+        return getattr(self.target, name)
+
+    def __setattr__(self, name, value):
+        if name in ['backend', 'name', '_target']:
+            self.__dict__[name] = value
+            return
+        setattr(self.target, name, value)
+
+    def __getitem__(self, name):
+        return self.target[name]
+    
+    def __setitem__(self, name, value):
+        self.target[name] = value
+
+    def __contains__(self, key):
+        return key in self.target
+    
+    def items(self):
+        return self.target.items()
+
+    def keys(self):
+        return self.target.keys()
+
+    def values(self):
+        return self.target.values()
+
+    def sync(self):
+        self.target.sync()
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        if '_target' in d:
+            del d['_target']
+        if 'backend' in d:
+            del d['backend']
+        return d
+
+    def __repr__(self):
+        return "Ref {}".format(self.name)
+
+       

@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 print(count)
                 print(e)
                 traceback.print_exc()
-                print(xapi)
+                #print(xapi)
                 if not isinstance(e, MissingConverterError):
                     sys.exit(1)
         #complete line
