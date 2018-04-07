@@ -94,7 +94,6 @@ class LeanRef(Writable):
     def __init__(self, backend, name):
         self.backend = backend
         self.name = name
-        self._target = None
 
     @property
     def ref(self):
@@ -110,17 +109,6 @@ class LeanRef(Writable):
     @property
     def attrs(self):
         return self.target.attrs
-
-    def __getattr__(self, name):
-        if name in ['backend', 'name', '_target']:
-            return self.__dict__[name]
-        return getattr(self.target, name)
-
-    def __setattr__(self, name, value):
-        if name in ['backend', 'name', '_target']:
-            self.__dict__[name] = value
-            return
-        setattr(self.target, name, value)
 
     def __getitem__(self, name):
         return self.target[name]
@@ -150,6 +138,9 @@ class LeanRef(Writable):
         if 'backend' in d:
             del d['backend']
         return d
+
+    def __setstate__(self, obj):
+        self.__dict__ = obj
 
     def __repr__(self):
         return "Ref {}".format(self.name)
