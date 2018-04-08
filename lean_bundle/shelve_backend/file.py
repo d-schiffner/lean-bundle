@@ -4,11 +4,12 @@ from pickle import HIGHEST_PROTOCOL
 
 class LeanFile():
     def __init__(self, filename, mode='c'):
+        __pickle_protocol = int(os.getenv('LEAN_PICKLE_PROTOCOL', HIGHEST_PROTOCOL))
         self.mode = mode
         if mode and 'w' == mode:
             self.mode = 'n'
         self.filename = filename
-        self.storage = shelve.open(self.filename, flag=self.mode, writeback=True, protocol=HIGHEST_PROTOCOL)
+        self.storage = shelve.open(self.filename, flag=self.mode, writeback=True, protocol=__pickle_protocol)
         self._setup()
 
     def __getitem__(self, name):

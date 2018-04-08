@@ -7,7 +7,7 @@ from utils.writable import Writable
 
 
 class LeanDataset(Writable):
-    STORAGE_METHOD = getenv('LEAN_DATASET_H5_STORAGE', 'dataset').lower()
+    STORAGE_METHOD = getenv('LEAN_DATASET_H5_STORAGE', 'attributes').lower()
     def __init__(self, parent, name):
         super().__init__()
         self.parent = parent.h5obj
@@ -16,7 +16,7 @@ class LeanDataset(Writable):
 
     def _as_attributes(self):
         group = self.parent.require_group(self.name)
-        for k,v in self.data:
+        for k,v in self.data.items():
             group.attrs[k] = v
         
     def _as_dataset(self):

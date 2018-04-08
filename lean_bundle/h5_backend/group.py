@@ -16,6 +16,10 @@ class LeanGroup(Writable):
     def attrs(self):
         return self.h5obj.attrs
 
+    @property
+    def ref(self):
+        return self.h5obj.ref
+
     def keys(self):
         return self.h5obj.keys()
 

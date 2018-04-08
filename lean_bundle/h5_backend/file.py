@@ -14,4 +14,6 @@ class LeanFile(h5py.File):
             from .group import LeanGroup
             return LeanGroup(h5obj)
         return h5obj
-        
+    
+    def sync(self):
+        pass
