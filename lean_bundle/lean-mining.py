@@ -20,15 +20,23 @@ def add_script(bundle, src_file, script_name):
         #TODO: Verify code!
         with LeanDataset(bundle['/scripts'], script_name) as lgd:
             lgd.data['code'] = src_code.read()
-        print("Added script", src_file, 'to bundle', bundle.filename)
+    print("Added script", src_file, 'to bundle', bundle.filename)
+    return script_name
 
-def run_script(bundle, script):
+def get_code_from_bundle(bundle, script):
     if not script in bundle['/scripts']:
         print("Invalid script", script)
         print('Following scripts are known')
         return
     #get code
-    code = bundle['/scripts/' + script].data['code']
+    return bundle['/scripts/' + script].data['code']
+    
+def run_script(bundle, script, from_file = False):
+    if from_file:
+        with open(script) as src:
+            code = src.read()
+    else:
+        code = get_code_from_bundle(bundle, script)
     binary = compile(code, '/scripts/' + script, 'exec')
     #extend path
     sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__),'..', '..')))
@@ -40,14 +48,23 @@ def run_script(bundle, script):
 if __name__ == "__main__":
     parser = ArgumentParser("LeAn Mining")
     parser.add_argument('file', help="The LeAn file to work with")
+    parser.add_argument('--add-and-run', help="The LeAnMining source to add and run")
     parser.add_argument('--add-script', help="The LeAnMining source to add")
     parser.add_argument('--script-name', default=None, help="Script alias")
     parser.add_argument('--run', help='Execute the given script')
+    parser.add_argument('--run-debug', help="Run a debug script using the given file")
     args = parser.parse_args()
     with LeanFile(args.file) as bundle:
+        if args.add_and_run:
+            args.run = add_script(bundle, args.add_and_run, args.script_name)
         if args.add_script:
             add_script(bundle, args.add_script, args.script_name)
-        if args.run:
-            print("Executing script", args.run)
-            run_script(bundle, args.run)
+    if args.run or args.run_debug:
+        with LeanFile(args.file, 'r') as bundle:
+            if args.run:
+                print("Executing script", args.run)
+                run_script(bundle, args.run)
+            if args.run_debug:
+                print("Executing debug script", args.run_debug)
+                run_script(bundle, args.run_debug, True)
     print("Program finished")

@@ -14,6 +14,9 @@ class LeanAttribs():
     def modify(self, key, value):
         self.parent._attrs[key] = value
     
+    def get(self, key, default):
+        return self.parent._attrs.get(key, default)
+        
     def __contains__(self, key):
         return key in self.parent._attrs
 
@@ -76,6 +79,8 @@ class LeanBase(Writable):
         #store lookup
         container.nodes.add(key)
         self.backend.storage[fullpath] = value
+        #restore parent
+        #self.backend.storage[container.name] = container
 
     def __getstate__(self):
         d = self.__dict__.copy()

@@ -12,19 +12,25 @@ class LeanFile():
         self.storage = shelve.open(self.filename, flag=self.mode, writeback=True, protocol=__pickle_protocol)
         self._setup()
 
-    def __getitem__(self, name):
-        tmp = self.storage['root']
-        tmp.backend = self
-        if name == '/':
-            return tmp
-        return tmp[name]
+    @property
+    def use_cache(self):
+        return self.storage.writeback
     
+    @use_cache.setter
+    def use_cache(self, value):
+        self.storage.writeback = value
+
+    def __getitem__(self, name):
+        tmp = self.storage[name]
+        tmp.backend = self
+        return tmp
+
     def _setup(self):
         from .group import LeanGroup
         #create root (empty path)
-        if not 'root' in self.storage:
-            self.storage['root'] = LeanGroup(self, '/')
-        self.root = self.storage['root']
+        if not '/' in self.storage:
+            self.storage['/'] = LeanGroup(self, '/')
+        self.root = self.storage['/']
         #store backend in case it has been retreived
         self.root.backend = self
         self.root.require_group('/user')
@@ -57,11 +63,25 @@ class LeanFile():
             traversed.append(p)
         return cur
 
+    def __iter__(self):
+        return self.storage.__iter__()
+
+    def __len__(self):
+        return self.storage.__len__()
+    
+    def __contains__(self, key):
+        return self.storage.__contains__(key)
+
     def sync(self):
         print("PERFORMANCE WARNING")
-        self.storage.sync()
+        #self.storage.sync()
 
     def close(self):
+        #in case we use the cache but we can only read
+        if self.mode == 'r':
+            #fast bail
+            self.storage.dict.close()
+            self.storage.dict = None
         self.storage.close()
 
     def __enter__(self):

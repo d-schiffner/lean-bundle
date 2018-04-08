@@ -1,4 +1,3 @@
-import numpy as np
 from utils.json import JSONObject
 from backend import *
 
@@ -27,4 +26,4 @@ def parse(fibers, statement):
         if "success" in res:
             lgd.data['success'] = res.success
         if "response" in res:
-            lgd.data['response'] = np.string_(res.response.encode())
+            lgd.data['response'] = res.response

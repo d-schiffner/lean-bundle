@@ -110,7 +110,7 @@ if __name__ == "__main__":
     if args.limit:
         num_lines = min(num_lines, args.limit)
     #create default groups
-    last = time.monotonic()
+    conversion_start = last = time.monotonic()
     #read statements
     with open(args.file, 'r') as data_file:
         if args.dump:
@@ -153,4 +153,7 @@ if __name__ == "__main__":
             STATEMENT_QUEUE.join()
         #close handles
     f.close()
+    conversion_end = time.monotonic()
+    dur = (conversion_end - conversion_start)
+    print("Converted {} statements in {} seconds ({} / second)".format(count, dur, float(count)/float(dur)))
     print("Program finished")

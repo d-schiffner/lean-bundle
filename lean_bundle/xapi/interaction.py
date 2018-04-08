@@ -1,4 +1,3 @@
-import numpy as np
 from xapi import lo
 from os import getenv
 from utils.error import MissingConverterError

@@ -1,4 +1,3 @@
-import numpy as np
 import hashlib
 from xapi import authority, actor
 from utils.datatypes import INTERACTIVE_LO_TYPE_MAP

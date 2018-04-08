@@ -1,0 +1,1 @@
+print(db.test.find({'verb.id' : 'http://adlnet.gov/expapi/verbs/answered'}).count());

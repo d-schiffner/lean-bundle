@@ -17,7 +17,7 @@ class LeanDataset(Writable):
     def _as_attributes(self):
         group = self.parent.require_group(self.name)
         for k,v in self.data.items():
-            group.attrs[k] = v
+            group.attrs[k] = np.string_(v)
         
     def _as_dataset(self):
         #transform data

@@ -1,5 +1,4 @@
 import logging
-import numpy as np
 from utils.json import JSONObject
 from utils.datatypes import ACTOR_TYPE_MAP
 

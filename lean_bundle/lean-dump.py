@@ -27,6 +27,6 @@ if __name__ == "__main__":
     parser.add_argument('file')
     parser.add_argument('--silent', '-s', default=False, action='store_true')
     args = parser.parse_args()
-    with LeanFile(args.file) as bundle:
+    with LeanFile(args.file, 'r') as bundle:
         root = bundle['/']
         print(traverse(root, args.silent))

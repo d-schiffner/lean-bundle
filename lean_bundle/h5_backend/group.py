@@ -34,7 +34,9 @@ class LeanGroup(Writable):
     def sync(self):
         for k,v in self.data.items():
             tv = type(v)
-            if tv is [str, bool]:
+            if tv is str:
+                self.h5obj.attrs[k] = np.string_(v)
+            if tv is bool:
                 self.h5obj.attrs[k] = v
             elif isinstance(v, JSONObject):
                 with LeanDataset(self, k) as lgd:
