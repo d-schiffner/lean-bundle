@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from backend import *
 from argparse import ArgumentParser
 
