@@ -1,6 +1,6 @@
 from os import path
 from .base import LeanBase
-from utils.json import JSONObject
+from ..utils.json import JSONObject
 
 class LeanGroup(LeanBase):
     def __init__(self, backend, name):

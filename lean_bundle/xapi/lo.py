@@ -1,8 +1,8 @@
 import hashlib
-from xapi import authority, actor
-from utils.datatypes import INTERACTIVE_LO_TYPE_MAP
-from utils.error import MissingConverterError
-from backend import *
+from . import authority, actor
+from ..utils.datatypes import INTERACTIVE_LO_TYPE_MAP
+from ..utils.error import MissingConverterError
+from ..backend import *
 
 __URL2LO = {}
 

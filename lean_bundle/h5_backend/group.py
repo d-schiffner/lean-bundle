@@ -2,9 +2,9 @@ import numpy as np
 import h5py
 from .datatypes import *
 from .dataset import LeanDataset
-from utils.json import JSONObject
-from utils.error import MissingConverterError
-from utils.writable import Writable
+from ..utils.json import JSONObject
+from ..utils.error import MissingConverterError
+from ..utils.writable import Writable
    
 class LeanGroup(Writable):
     def __init__(self, h5obj):

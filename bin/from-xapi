@@ -5,11 +5,11 @@ import logging
 import time
 from os import path
 from argparse import ArgumentParser
-from utils.json import JSONObject
-from utils.error import *
-from utils.files import linecount
-from utils.console import update_line
-from xapi import actor, authority, date, lo, interaction, result, context
+from lean_bundle.utils.json import JSONObject
+from lean_bundle.utils.error import *
+from lean_bundle.utils.files import linecount
+from lean_bundle.utils.console import update_line
+from lean_bundle.xapi import actor, authority, date, lo, interaction, result, context
 
 #multithreading
 from queue import Queue
@@ -17,7 +17,7 @@ from threading import Thread
 
 logging.basicConfig(level=logging.INFO)
 #load the backend
-from backend import *
+from lean_bundle.backend import *
 
 def process_statement(bundle, xapi):
     log = logging.getLogger()

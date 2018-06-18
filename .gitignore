@@ -2,4 +2,5 @@
 **/*.json
 **/*.lean*
 .vscode
-
+*.egg-info
+__pycache__

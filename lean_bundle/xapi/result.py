@@ -1,5 +1,5 @@
-from utils.json import JSONObject
-from backend import *
+from ..utils.json import JSONObject
+from ..backend import *
 
 def _score_parser(stmt):
     if isinstance(stmt, JSONObject):

@@ -1,5 +1,6 @@
 import lmdb
 import os
+
 class LeanFile(object):
     def __init__(self, filename, mode=None):
         if mode == 'w':

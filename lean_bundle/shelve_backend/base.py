@@ -1,5 +1,5 @@
 from os import path
-from utils.writable import Writable
+from ..utils.writable import Writable
 
 class LeanAttribs():
     def __init__(self, parent):

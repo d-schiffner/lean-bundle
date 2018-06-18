@@ -2,8 +2,8 @@ import h5py
 import numpy as np
 from os import getenv
 from .datatypes import KEY_VALUE_DT
-from utils.json import JSONObject
-from utils.writable import Writable
+from ..utils.json import JSONObject
+from ..utils.writable import Writable
 
 
 class LeanDataset(Writable):

@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from utils.datatypes import *
+from ..utils.datatypes import *
 
 REF_DT = h5py.special_dtype(ref=h5py.Reference)
 KEY_VALUE_DT = np.dtype([('key', h5py.special_dtype(vlen=str)), ('value', h5py.special_dtype(vlen=str))])

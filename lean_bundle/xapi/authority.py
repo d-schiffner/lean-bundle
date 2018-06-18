@@ -1,4 +1,4 @@
-from utils.datatypes import ACTOR_TYPE_MAP
+from ..utils.datatypes import ACTOR_TYPE_MAP
 
 def name(statement):
     return  statement.authority.name if not 'authority' in statement or not 'name' in statement.authority else 'anon'

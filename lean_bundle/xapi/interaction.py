@@ -1,7 +1,7 @@
-from xapi import lo
+from . import lo
 from os import getenv
-from utils.error import MissingConverterError
-from backend import *
+from ..utils.error import MissingConverterError
+from ..backend import *
 
 class InteractionCreator():
     def __init__(self, bundle, statement):

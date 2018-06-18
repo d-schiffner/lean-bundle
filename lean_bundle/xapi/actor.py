@@ -1,6 +1,6 @@
 import logging
-from utils.json import JSONObject
-from utils.datatypes import ACTOR_TYPE_MAP
+from ..utils.json import JSONObject
+from ..utils.datatypes import ACTOR_TYPE_MAP
 
 __log = logging.getLogger()
 

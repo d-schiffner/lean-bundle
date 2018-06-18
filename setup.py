@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='LeAnBundle',
       version='1.0',
@@ -9,5 +9,5 @@ setup(name='LeAnBundle',
       url='https://github.com/dschiffner/lean-bundle/',
       license='MIT',
       packages=['lean_bundle'],
-      scripts=['lean_bundle/from-xapi', 'lean_bundle/lean-dump', 'lean_bundle/lean-mining']
+      scripts=['bin/from-xapi', 'bin/lean-dump', 'bin/lean-mining']
       )
