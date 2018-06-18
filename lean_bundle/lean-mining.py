@@ -17,7 +17,7 @@ def add_script(bundle, src_file, script_name):
     if script_name in bundle['/scripts']:
         print("Replacing code!!!")
     with open(src_file) as src_code:
-        #TODO: Verify code!
+        #TODO: Verify loaded source code!
         with LeanDataset(bundle['/scripts'], script_name) as lgd:
             lgd.data['code'] = src_code.read()
     print("Added script", src_file, 'to bundle', bundle.filename)
@@ -40,6 +40,7 @@ def run_script(bundle, script, from_file = False):
     binary = compile(code, '/scripts/' + script, 'exec')
     #extend path
     sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__),'..', '..')))
+    #add Lean data types
     tmp_env = {'LeanDataset' : LeanDataset, 'LeanGroup' : LeanGroup, 'LeanFile' : LeanFile, 'sys': sys}
     exec(binary, tmp_env)
     #run the code
