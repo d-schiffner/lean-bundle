@@ -66,4 +66,3 @@ xAPI verb, Descriptions
 12. How is previously stored data imported into a LEAN bundle?
 13. How are LO aggregates identified?
 14. Is it necessary to rewrite all data in a new 'version' of a LO?
-15. 
